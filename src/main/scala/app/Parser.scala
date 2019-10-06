@@ -31,6 +31,16 @@ object Parser extends App {
       cmd("init")
         .action((_, c) => c.copy(mode = "init"))
         .text("create a sgit repository"),
+      cmd("add")
+        .action((_, c) => c.copy(mode = "add"))
+        .text("adds the files to the index")
+        .children(
+          arg[File]("<file>...")
+            .required()
+            .unbounded()
+            .action((x, c) => c.copy(files = c.files :+ x))
+            .text("file to add to index")
+        ),
     )
   }
 
@@ -38,9 +48,10 @@ object Parser extends App {
   OParser.parse(parser1, args, Config()) match {
     case Some(config) =>
       config.mode match {
-        case "init" => {
+        case "init" =>
           println(Repo.init())
-        }
+        case "add" =>
+          add.add(config.files)
         case _ =>
         println("error")
       }

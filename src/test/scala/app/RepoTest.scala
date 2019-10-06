@@ -1,7 +1,9 @@
 package app
 
 import java.io.File
+
 import org.scalatest._
+import util.FileUtil
 
 class RepoTest extends FlatSpec {
 
@@ -13,7 +15,9 @@ class RepoTest extends FlatSpec {
 
   it should "return .sgit directory path"
     Repo.init()
-
     assert(Repo.getSgitPath(System.getProperty("user.dir")).get == ((System.getProperty("user.dir") + File.separator + ".sgit")))
+
+  it should "echapp meta character"
+    assert(FileUtil.escapeMetaCharacters("*") == "/*")
 
 }
