@@ -1,34 +1,33 @@
 package app
 
-import java.io.File
+import java.io.{File, FileWriter}
+import java.nio.file.{Files, Paths, StandardCopyOption}
 
 import util.FileUtil
 
 import scala.annotation.tailrec
+import scala.io.Source
 
 object add {
 
-  val curDir: String = System.getProperty("user.dir")
-
-  //TODO
   def add(files: Seq[File]): String = {
 
-    if (!new File(".sgit/index").exists()) {
-      new File(".sgit/index").createNewFile()
+    // retrieve the index file path
+    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
+    val indexPath = sgitPath + File.separator + "index"
+
+    //Check if the index file is created
+    if (!new File(indexPath).exists()) {
+      new File(indexPath).createNewFile()
     }
 
     //For each pattern after the sgit add, we retrieve the path of all the corresponding files
     val pathList = getListPaths(files)
-    pathList.foreach(p => println(p))
 
-    //Create Blob
-    val ha = FileUtil.sha1Hash(System.getProperty("user.dir"))
-    println(ha)
+    //Create Blob file and edit index file for each path
+    pathList.foreach(p => addBlob(p))
 
-
-    //Edit index file
-
-    "return"
+    "hey"
   }
 
   //TODO : regex
@@ -39,11 +38,66 @@ object add {
       f match {
         case Nil => listPath
         case head :: tail =>
-          val list = FileUtil.recursiveListFiles(new File(curDir), head.getName.r).filter(a => a.isFile).map(a => a.getAbsolutePath)
+          val list = FileUtil.recursiveListFiles(new File(System.getProperty("user.dir")), head.getName.r).filter(a => a.isFile).map(a => a.getAbsolutePath)
           loop(listPath ++ list, tail)
       }
     }
+
     loop(List[String](), files)
   }
+
+  //Create Blob file and edit index file for each path
+  def addBlob(path: String): Unit = {
+    //retrieve content of the file
+    val source = scala.io.Source.fromFile(path)
+    val lines = try source.getLines mkString "\n" finally source.close()
+
+    //create the hash with the content of the file
+    val hash = FileUtil.sha1Hash(lines)
+
+    //check if it is necessary to index the file
+    if (!isAlreadyIndexed(hash, path)) {
+
+      //create the path of the blob file
+      val dirSgit = Repo.getSgitPath(System.getProperty("user.dir")).get
+      val blobPath = dirSgit + File.separator + "objects" + File.separator + hash
+
+      //create the blob file
+      new File(blobPath).createNewFile()
+
+      //fill the blob file
+      val fw = new FileWriter(blobPath, true);
+      fw.write(lines);
+      fw.close()
+
+      //update the index file
+      updateIndex(hash, path)
+    }
+  }
+
+  def updateIndex(hash: String, path: String): Unit = {
+
+    //retrieve the path of the index file
+    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
+    val indexPath = sgitPath + File.separator + "index"
+
+    //edit the index file with the hash and the path
+    val fw = new FileWriter(indexPath, true);
+    fw.write(hash + " " + path + "\n");
+    fw.close()
+
+  }
+
+  def isAlreadyIndexed(hash: String, path: String): Boolean = {
+
+    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
+    val indexPath = sgitPath + File.separator + "index"
+
+    val source = scala.io.Source.fromFile(indexPath)
+    val lines = try source.getLines mkString "\n" finally source.close()
+    lines.contains(hash + " " + path)
+
+  }
+
 
 }

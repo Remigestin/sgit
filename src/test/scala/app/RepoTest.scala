@@ -17,7 +17,7 @@ class RepoTest extends FlatSpec {
     Repo.init()
     assert(Repo.getSgitPath(System.getProperty("user.dir")).get == ((System.getProperty("user.dir") + File.separator + ".sgit")))
 
-  it should "echapp meta character"
+  it should "escape meta character"
     assert(FileUtil.escapeMetaCharacters("*") == "/*")
 
 }
