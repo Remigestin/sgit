@@ -1,6 +1,6 @@
 package app
 
-import java.io.{File, FileWriter}
+import java.io.{File, FileOutputStream, FileWriter, PrintWriter}
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
 import util.FileUtil
@@ -55,24 +55,28 @@ object add {
     //create the hash with the content of the file
     val hash = FileUtil.sha1Hash(lines)
 
-    //check if it is necessary to index the file
+    //check if the file is not already indexed with the same content(hash)
     if (!isAlreadyIndexed(hash, path)) {
 
       //create the path of the blob file
       val dirSgit = Repo.getSgitPath(System.getProperty("user.dir")).get
       val blobPath = dirSgit + File.separator + "objects" + File.separator + hash
 
-      //create the blob file
-      new File(blobPath).createNewFile()
+      //if the blob does not exist, we create the blob file
+      if (!new File(blobPath).exists()) {
+        //create the blob file
+        new File(blobPath).createNewFile()
 
-      //fill the blob file
-      val fw = new FileWriter(blobPath, true);
-      fw.write(lines);
-      fw.close()
+        //fill the blob file
+        val fw = new FileWriter(blobPath, true);
+        fw.write(lines);
+        fw.close()
+      }
 
       //update the index file
       updateIndex(hash, path)
     }
+
   }
 
   def updateIndex(hash: String, path: String): Unit = {
@@ -81,7 +85,10 @@ object add {
     val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
     val indexPath = sgitPath + File.separator + "index"
 
-    //edit the index file with the hash and the path
+    //remove the old line
+    removeIfPathAlreadyIndexed(path)
+
+    //add in the index file the line with the hash and the path
     val fw = new FileWriter(indexPath, true);
     fw.write(hash + " " + path + "\n");
     fw.close()
@@ -96,6 +103,29 @@ object add {
     val source = scala.io.Source.fromFile(indexPath)
     val lines = try source.getLines mkString "\n" finally source.close()
     lines.contains(hash + " " + path)
+
+  }
+
+  def removeIfPathAlreadyIndexed(path: String): Unit = {
+    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
+    val indexPath = sgitPath + File.separator + "index"
+
+    val source = scala.io.Source.fromFile(indexPath)
+    val lines = try source.getLines.toList finally source.close()
+
+    if (lines.contains(path)) {
+
+      val source = scala.io.Source.fromFile(indexPath)
+      val linesList = try source.getLines.toList finally source.close()
+
+      linesList.filter(l => !l.contains(path))
+      val fw = new FileWriter(indexPath, false);
+      linesList.foreach(ll => fw.write(ll))
+      fw.close()
+
+
+    }
+
 
   }
 
