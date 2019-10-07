@@ -58,8 +58,7 @@ object Repo {
   }
 
   def isInASgitRepo: Boolean = {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).getOrElse("error")
-    repoPath != "error"
+    Repo.getRepoPath(System.getProperty("user.dir")).isDefined
   }
 
 }
