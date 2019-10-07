@@ -16,8 +16,6 @@ object FileUtil {
     good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_,r))
   }
 
-
-
   def escapeMetaCharacters(inputString: String): String = {
     val rep = inputString
     val metaCharacters = Array( "^", "$", "{", "}", "[", "]", "(", ")", ".", "*", "+", "?", "|", "<", ">", "-", "&", "%")

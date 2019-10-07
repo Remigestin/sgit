@@ -41,6 +41,9 @@ object Parser extends App {
             .action((x, c) => c.copy(files = c.files :+ x))
             .text("file to add to index")
         ),
+      cmd("commit")
+        .action((_, c) => c.copy(mode = "commit"))
+        .text("Create a new commit containing the current contents of the index and the given log message describing the changes.")
     )
   }
 
@@ -53,6 +56,11 @@ object Parser extends App {
         case "add" =>
           if (Repo.isInASgitRepo)
             add.add(config.files)
+          else
+            println("you are not in a sgit repo")
+        case "commit" =>
+          if (Repo.isInASgitRepo)
+            Commit.commit()
           else
             println("you are not in a sgit repo")
         case _ =>
