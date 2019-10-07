@@ -51,11 +51,14 @@ object Parser extends App {
         case "init" =>
           println(Repo.init())
         case "add" =>
-          add.add(config.files)
+          if (Repo.isInASgitRepo)
+            add.add(config.files)
+          else
+            println("you are not in a sgit repo")
         case _ =>
-        println("error")
+          println("error")
       }
     case _ =>
-      //arguments are bad
+    //arguments are bad
   }
 }

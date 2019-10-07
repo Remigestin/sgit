@@ -35,26 +35,31 @@ object Repo {
 
   @tailrec
   def getSgitPath(path: String): Option[String] = {
-    if (path == null) {
-      None
-    }
-    else if (new File(path + File.separator + ".sgit/").exists()) {
-      Some(new File(path + File.separator + ".sgit/").getAbsolutePath)
+    if (path.isEmpty)  None
+    else if (new File(path + File.separator + ".sgit").exists()) {
+      Some(new File(path + File.separator + ".sgit").getAbsolutePath)
     } else {
-      getSgitPath(new File(".").getParentFile.getAbsolutePath)
+      val parent = new File(path).getParentFile
+      if (!parent.getName.isEmpty) getSgitPath(parent.getAbsolutePath)
+      else getSgitPath("")
     }
   }
 
   @tailrec
   def getRepoPath(path: String): Option[String] = {
-    if (path == null) {
-      None
-    }
-    else if (new File(path + File.separator + ".sgit/").exists()) {
+    if (path.isEmpty) None
+    else if (new File(path + File.separator + ".sgit").exists()) {
       Some(new File(path).getAbsolutePath)
     } else {
-      getRepoPath(new File(".").getParentFile.getAbsolutePath)
+      val parent = new File(path).getParentFile
+      if (!parent.getName.isEmpty) getRepoPath(parent.getAbsolutePath)
+      else getRepoPath("")
     }
+  }
+
+  def isInASgitRepo: Boolean = {
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).getOrElse("error")
+    repoPath != "error"
   }
 
 }

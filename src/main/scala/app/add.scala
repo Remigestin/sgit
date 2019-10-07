@@ -12,6 +12,8 @@ object add {
 
   def add(files: Seq[File]): String = {
 
+    println(System.getProperty("user.dir"))
+
     // retrieve the index file path
     val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
     val indexPath = sgitPath + File.separator + "index"
