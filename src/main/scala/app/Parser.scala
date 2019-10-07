@@ -55,5 +55,7 @@ object Parser extends App {
         case _ =>
         println("error")
       }
+    case _ =>
+      //arguments are bad
   }
 }

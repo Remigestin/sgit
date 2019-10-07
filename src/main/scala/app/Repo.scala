@@ -33,7 +33,6 @@ object Repo {
   }
 
 
-
   @tailrec
   def getSgitPath(path: String): Option[String] = {
     if (path == null) {
@@ -46,5 +45,16 @@ object Repo {
     }
   }
 
+  @tailrec
+  def getRepoPath(path: String): Option[String] = {
+    if (path == null) {
+      None
+    }
+    else if (new File(path + File.separator + ".sgit/").exists()) {
+      Some(new File(path).getAbsolutePath)
+    } else {
+      getRepoPath(new File(".").getParentFile.getAbsolutePath)
+    }
+  }
 
 }

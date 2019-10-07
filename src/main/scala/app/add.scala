@@ -25,7 +25,10 @@ object add {
     val pathList = getListPaths(files)
 
     //Create Blob file and edit index file for each path
-    pathList.foreach(p => addBlob(p))
+    val repoPath = sgitPath.replace(File.separator + ".sgit", "")
+    println(repoPath)
+
+    pathList.foreach(p => addBlob(p.replace(repoPath + File.separator, "")))
 
     "hey"
   }
@@ -48,8 +51,9 @@ object add {
 
   //Create Blob file and edit index file for each path
   def addBlob(path: String): Unit = {
+
     //retrieve content of the file
-    val source = scala.io.Source.fromFile(path)
+    val source = scala.io.Source.fromFile(Repo.getRepoPath(System.getProperty("user.dir")).get + File.separator + path)
     val lines = try source.getLines mkString "\n" finally source.close()
 
     //create the hash with the content of the file
@@ -76,7 +80,6 @@ object add {
       //update the index file
       updateIndex(hash, path)
     }
-
   }
 
   def updateIndex(hash: String, path: String): Unit = {
