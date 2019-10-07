@@ -111,18 +111,13 @@ object add {
     val indexPath = sgitPath + File.separator + "index"
 
     val source = scala.io.Source.fromFile(indexPath)
-    val lines = try source.getLines.toList finally source.close()
+    val lines = try source.getLines mkString "\n" finally source.close()
 
     if (lines.contains(path)) {
-
-      val source = scala.io.Source.fromFile(indexPath)
-      val linesList = try source.getLines.toList finally source.close()
-
-      linesList.filter(l => !l.contains(path))
+      val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
       val fw = new FileWriter(indexPath, false);
-      linesList.foreach(ll => fw.write(ll))
+      linesList.foreach(ll => fw.write(ll + "\n"))
       fw.close()
-
 
     }
 
