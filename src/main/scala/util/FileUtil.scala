@@ -5,6 +5,8 @@ import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.security.MessageDigest
 import java.math.BigInteger
 
+import app.Repo
+
 import scala.annotation.tailrec
 
 object FileUtil {
@@ -32,6 +34,9 @@ object FileUtil {
     hashedString
   }
 
-
-
+  def readIndex(): List[String] = {
+    val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
+    val source = scala.io.Source.fromFile(indexPath)
+    try source.getLines.toList finally source.close()
+  }
 }

@@ -3,6 +3,8 @@ package app
 import java.io.File
 import java.util.regex.Pattern
 
+import util.FileUtil
+
 
 
 object Commit {
@@ -10,7 +12,7 @@ object Commit {
   def commit(): String = {
 
     //get all the lines of the index files
-    val listIndex = readIndex()
+    val listIndex = FileUtil.readIndex()
 
     //keep just the list of the paths
     val listPath = listIndex.map(l => l.split(" ")(1))
@@ -28,10 +30,5 @@ object Commit {
 
   }
 
-  def readIndex(): List[String] = {
-    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
-    val indexPath = sgitPath + File.separator + "index"
-    val source = scala.io.Source.fromFile(indexPath)
-    try source.getLines.toList finally source.close()
-  }
+
 }

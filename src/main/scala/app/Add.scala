@@ -12,11 +12,8 @@ object Add {
 
   def add(files: Seq[File]): String = {
 
-    println(System.getProperty("user.dir"))
-
     // retrieve the index file path
-    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
-    val indexPath = sgitPath + File.separator + "index"
+    val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
 
     //Check if the index file is created
     if (!new File(indexPath).exists()) {
@@ -27,8 +24,8 @@ object Add {
     val pathList = getListPaths(files)
 
     //Create Blob file and edit index file for each path
-    val repoPath = sgitPath.replace(File.separator + ".sgit", "")
-    println(repoPath)
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+
 
     pathList.foreach(p => addBlob(p.replace(repoPath + File.separator, "")))
 
@@ -87,8 +84,7 @@ object Add {
   def updateIndex(hash: String, path: String): Unit = {
 
     //retrieve the path of the index file
-    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
-    val indexPath = sgitPath + File.separator + "index"
+    val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
 
     //remove the old line
     removeIfPathAlreadyIndexed(path)
@@ -101,32 +97,22 @@ object Add {
   }
 
   def isAlreadyIndexed(hash: String, path: String): Boolean = {
-
-    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
-    val indexPath = sgitPath + File.separator + "index"
-
-    val source = scala.io.Source.fromFile(indexPath)
-    val lines = try source.getLines mkString "\n" finally source.close()
+    val lines = FileUtil.readIndex() mkString "\n"
     lines.contains(hash + " " + path)
-
   }
 
   def removeIfPathAlreadyIndexed(path: String): Unit = {
-    val sgitPath = Repo.getSgitPath(System.getProperty("user.dir")).get
-    val indexPath = sgitPath + File.separator + "index"
 
-    val source = scala.io.Source.fromFile(indexPath)
-    val lines = try source.getLines mkString "\n" finally source.close()
+    val lines = FileUtil.readIndex() mkString "\n"
 
     if (lines.contains(path)) {
+      val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
       val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
       val fw = new FileWriter(indexPath, false);
       linesList.foreach(ll => fw.write(ll + "\n"))
       fw.close()
 
     }
-
-
   }
 
 

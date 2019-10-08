@@ -57,6 +57,21 @@ object Repo {
     }
   }
 
+
+    @tailrec
+    def getIndexPath(path: String): Option[String] = {
+      if (path.isEmpty)  None
+      else if (new File(path + File.separator + ".sgit" + File.separator + "index").exists()) {
+        Some(new File(path + File.separator + ".sgit" + File.separator + "index").getAbsolutePath)
+      } else {
+        val parent = new File(path).getParentFile
+        if (!parent.getName.isEmpty) getIndexPath(parent.getAbsolutePath)
+        else getIndexPath("")
+      }
+    }
+
+
+
   def isInASgitRepo: Boolean = {
     Repo.getRepoPath(System.getProperty("user.dir")).isDefined
   }
