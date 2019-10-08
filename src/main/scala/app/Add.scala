@@ -8,7 +8,7 @@ import util.FileUtil
 import scala.annotation.tailrec
 import scala.io.Source
 
-object add {
+object Add {
 
   def add(files: Seq[File]): String = {
 

@@ -55,7 +55,7 @@ object Parser extends App {
           println(Repo.init())
         case "add" =>
           if (Repo.isInASgitRepo)
-            add.add(config.files)
+            Add.add(config.files)
           else
             println("you are not in a sgit repo")
         case "commit" =>
