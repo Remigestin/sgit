@@ -1,4 +1,4 @@
-package app
+package command
 
 import java.io.{File, PrintWriter}
 import java.nio.file.{Files, Path, Paths}

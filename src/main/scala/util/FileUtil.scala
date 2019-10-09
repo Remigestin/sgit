@@ -5,7 +5,7 @@ import java.io.{ByteArrayOutputStream, File, FileInputStream, FileWriter}
 import java.security.MessageDigest
 import java.math.BigInteger
 
-import app.Repo
+import command.Repo
 
 import scala.annotation.tailrec
 
