@@ -59,7 +59,7 @@ object Parser extends App {
             println("you are not in a sgit repo")
         case "commit" =>
           if (Repo.isInASgitRepo)
-            Commit.commit()
+            println(Commit.commit())
           else
             println("you are not in a sgit repo")
         case _ =>

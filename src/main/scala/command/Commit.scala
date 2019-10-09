@@ -1,5 +1,6 @@
 package command
 
+
 import java.io.File._
 import java.util.regex.Pattern
 
@@ -18,15 +19,17 @@ object Commit {
     val listIndex = readIndexToList()
 
     //keep just the list of the paths cut in array.
-    val separator = Pattern.quote(System.getProperty("file.separator"))
-    val listPathsIndex = listIndex.map(l => l.split(" ")(1).split(separator))
+    val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
+    val listPathsIndex = listIndex.map(l => l.split(" ")(1).split(separatorSplit))
 
     //sort the list by the greatest number of directories in each path
     val listSorted = listPathsIndex.sortBy(f => f.length).reverse
 
     val mapIndex = readIndexToMap()
 
-    println(readIndexToMap())
+    val shaTreeCommit = tree(pathsIndex = listSorted, depth = listSorted.head.length, mapIndex = mapIndex, repo = Repo.getRepoPath(System.getProperty("user.dir")).get)
+
+
 
 
     ""
@@ -45,6 +48,7 @@ object Commit {
    */
   @tailrec
   def tree(pathsIndex: List[Array[String]], depth: Int, mapParent: Map[String, Array[String]] = Map(), mapIndex: Map[String, String], repo: String): String = {
+    val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
     if (depth == 0) {
       //---- here we can create the main tree
 
@@ -53,7 +57,7 @@ object Commit {
       val sha = sha1Hash(contentTreeCommit)
 
       //create the file
-      val treeFilePath = repo + separator + "objects" + separator + sha
+      val treeFilePath = repo + separator + ".sgit" + separator + "objects" + separator + sha
       createFile(path = treeFilePath, content = contentTreeCommit)
 
       //return the sha of the main tree
@@ -73,10 +77,10 @@ object Commit {
       val blobs = pathsCurrentSize.filter(f => mapIndex.contains(f))
 
       //recover the paths of the parents directory for each blob
-      val pathsBlobParent = blobs.map(blob => blob.split(separator).slice(0, blob.split(separator).length - 1) mkString separator)
+      val pathsBlobParent = blobs.map(blob => blob.split(separatorSplit).slice(0, blob.split(separatorSplit).length - 1) mkString separator)
 
       //creation of the line of the blob in the future tree file with this pattern :  "blob sha1 name"
-      val linesBlobChildren = blobs.map(blob => "blob " + mapIndex(blob) + " " + blob.split(separator).last)
+      val linesBlobChildren = blobs.map(blob => "blob " + mapIndex(blob) + " " + blob.split(separatorSplit).last)
 
       //update the map of the parents with the lines children created
       val mapParentPostBlobsStep = updateMapParent(mapParent, pathsBlobParent, linesBlobChildren)
@@ -87,10 +91,10 @@ object Commit {
       val pathsDir = pathsCurrentSize.filter(f => !mapIndex.contains(f))
 
       //recover the paths of the parents directory for each directory
-      val pathsDirParent = pathsDir.map(tree => tree.split(separator).slice(0, tree.split(separator).length - 1) mkString separator)
+      val pathsDirParent = pathsDir.map(tree => tree.split(separatorSplit).slice(0, tree.split(separatorSplit).length - 1) mkString separator)
 
       //creation of the line of the tree in the future parent tree file with this pattern :  "tree sha1 name"
-      val linesTreeChildren = pathsDir.map(dir => "tree " + sha1Hash(mapParentPostBlobsStep(dir) mkString "\n") + " " + dir.split(separator).last)
+      val linesTreeChildren = pathsDir.map(dir => "tree " + sha1Hash(mapParentPostBlobsStep(dir) mkString "\n") + " " + dir.split(separatorSplit).last)
 
       //update the map of the parents with the lines trees created
       val mapParentPostTreesStep = updateMapParent(mapParentPostBlobsStep, pathsDirParent, linesTreeChildren)
@@ -102,7 +106,7 @@ object Commit {
       val contentTreeList = pathsDir.map(d => mapParentPostTreesStep(d) mkString "\n")
 
       //sha1 and write the tree file
-      contentTreeList.map(content => createFile(repo + separator + "objects" + separator + sha1Hash(content), content))
+      contentTreeList.map(content => createFile(repo + separator + ".sgit" + separator + "objects" + separator + sha1Hash(content), content))
 
       //remove the elements created in this step, ie the element at the size param position in each array.
       val pathsSliced = pathsIndex.map(arr => removeLastMax(arr, depth))
