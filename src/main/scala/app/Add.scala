@@ -15,13 +15,9 @@ object Add {
     // retrieve the index file path
     val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
 
-    //Check if the index file is created
-    if (!new File(indexPath).exists()) {
-      new File(indexPath).createNewFile()
-    }
-
     //For each pattern after the sgit add, we retrieve the path of all the corresponding files
     val pathList = getListPaths(files)
+
 
     //Create Blob file and edit index file for each path
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
@@ -32,7 +28,7 @@ object Add {
     "hey"
   }
 
-  //TODO : regex
+  //TODO : glob
   //For each pattern after the sgit add, we get the path of all the corresponding files
   def getListPaths(files: Seq[File]): List[String] = {
     @tailrec
@@ -67,12 +63,13 @@ object Add {
 
       //if the blob does not exist, we create the blob file
       if (!new File(blobPath).exists()) {
+
         //create the blob file
         new File(blobPath).createNewFile()
 
         //fill the blob file
-        val fw = new FileWriter(blobPath, true);
-        fw.write(lines);
+        val fw = new FileWriter(blobPath, true)
+        fw.write(lines)
         fw.close()
       }
 
@@ -90,8 +87,8 @@ object Add {
     removeIfPathAlreadyIndexed(path)
 
     //add in the index file the line with the hash and the path
-    val fw = new FileWriter(indexPath, true);
-    fw.write(hash + " " + path + "\n");
+    val fw = new FileWriter(indexPath, true)
+    fw.write(hash + " " + path + "\n")
     fw.close()
 
   }
@@ -108,7 +105,7 @@ object Add {
     if (lines.contains(path)) {
       val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
       val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
-      val fw = new FileWriter(indexPath, false);
+      val fw = new FileWriter(indexPath, false)
       linesList.foreach(ll => fw.write(ll + "\n"))
       fw.close()
 

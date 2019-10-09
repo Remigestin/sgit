@@ -1,7 +1,7 @@
 package util
 
 import scala.util.matching.Regex
-import java.io.{ByteArrayOutputStream, File, FileInputStream}
+import java.io.{ByteArrayOutputStream, File, FileInputStream, FileWriter}
 import java.security.MessageDigest
 import java.math.BigInteger
 
@@ -38,5 +38,17 @@ object FileUtil {
     val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
     val source = scala.io.Source.fromFile(indexPath)
     try source.getLines.toList finally source.close()
+  }
+
+  def createFile(path: String, content:String): Unit = {
+
+    if (!new File(path).exists()) {
+      //create the file
+      new File(path).createNewFile()
+    }
+    //fill the file
+    val fw = new FileWriter(path, false)
+    fw.write(content)
+    fw.close()
   }
 }

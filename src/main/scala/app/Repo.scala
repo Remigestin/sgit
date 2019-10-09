@@ -58,11 +58,17 @@ object Repo {
   }
 
 
+  //get the index file path. If the repo is initialized but without index, the index file is created
     @tailrec
     def getIndexPath(path: String): Option[String] = {
       if (path.isEmpty)  None
-      else if (new File(path + File.separator + ".sgit" + File.separator + "index").exists()) {
-        Some(new File(path + File.separator + ".sgit" + File.separator + "index").getAbsolutePath)
+      else if (new File(path + File.separator + ".sgit").exists()) {
+        val indexPath = path + File.separator + ".sgit" + File.separator + "index"
+        if (!new File(indexPath).exists()) {
+          new File(indexPath).createNewFile()
+        }
+        Some(new File(indexPath).getAbsolutePath)
+
       } else {
         val parent = new File(path).getParentFile
         if (!parent.getName.isEmpty) getIndexPath(parent.getAbsolutePath)
