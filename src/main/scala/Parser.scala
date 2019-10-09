@@ -1,7 +1,6 @@
-package command
-
 import java.io.File
 
+import command.{Add, Commit, Repo}
 import scopt.OParser
 
 case class Config(
