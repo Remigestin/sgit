@@ -34,11 +34,7 @@ object FileUtil {
     hashedString
   }
 
-  def readIndex(): List[String] = {
-    val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
-    val source = scala.io.Source.fromFile(indexPath)
-    try source.getLines.toList finally source.close()
-  }
+
 
   def createFile(path: String, content:String): Unit = {
 
@@ -46,9 +42,11 @@ object FileUtil {
       //create the file
       new File(path).createNewFile()
     }
-    //fill the file
-    val fw = new FileWriter(path, false)
-    fw.write(content)
-    fw.close()
+    if (!content.isEmpty) {
+      //fill the file
+      val fw = new FileWriter(path, false)
+      fw.write(content)
+      fw.close()
+    }
   }
 }

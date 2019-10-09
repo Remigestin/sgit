@@ -4,6 +4,7 @@ import java.io.{File, FileOutputStream, FileWriter, PrintWriter}
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
 import util.FileUtil
+import util.IndexUtil._
 
 import scala.annotation.tailrec
 import scala.io.Source
@@ -94,13 +95,13 @@ object Add {
   }
 
   def isAlreadyIndexed(hash: String, path: String): Boolean = {
-    val lines = FileUtil.readIndex() mkString "\n"
+    val lines = readIndexToList() mkString "\n"
     lines.contains(hash + " " + path)
   }
 
   def removeIfPathAlreadyIndexed(path: String): Unit = {
 
-    val lines = FileUtil.readIndex() mkString "\n"
+    val lines = readIndexToList() mkString "\n"
 
     if (lines.contains(path)) {
       val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get

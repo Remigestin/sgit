@@ -3,8 +3,9 @@ package command
 import java.io.File._
 import java.util.regex.Pattern
 
-import logic.Tree
+import util.IndexUtil._
 import util.FileUtil._
+import util.IndexUtil
 
 import scala.annotation.tailrec
 
@@ -14,7 +15,7 @@ object Commit {
   def commit(): String = {
 
     //get all the lines of the index files
-    val listIndex = readIndex()
+    val listIndex = readIndexToList()
 
     //keep just the list of the paths cut in array.
     val separator = Pattern.quote(System.getProperty("file.separator"))
@@ -22,6 +23,10 @@ object Commit {
 
     //sort the list by the greatest number of directories in each path
     val listSorted = listPathsIndex.sortBy(f => f.length).reverse
+
+    val mapIndex = readIndexToMap()
+
+    println(readIndexToMap())
 
 
     ""

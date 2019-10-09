@@ -3,7 +3,7 @@ package command
 import java.io.{File, PrintWriter}
 import java.nio.file.{Files, Path, Paths}
 
-import util.FileUtil
+import util.FileUtil._
 
 import scala.annotation.tailrec
 import scala.util.matching.Regex
@@ -64,9 +64,7 @@ object Repo {
       if (path.isEmpty)  None
       else if (new File(path + File.separator + ".sgit").exists()) {
         val indexPath = path + File.separator + ".sgit" + File.separator + "index"
-        if (!new File(indexPath).exists()) {
-          new File(indexPath).createNewFile()
-        }
+        createFile(indexPath, "")
         Some(new File(indexPath).getAbsolutePath)
 
       } else {
