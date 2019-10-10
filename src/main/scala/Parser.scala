@@ -8,6 +8,7 @@ case class Config(
                    out: File = new File("."),
                    xyz: Boolean = false,
                    libName: String = "",
+                   commitMessage: String = "",
                    maxCount: Int = -1,
                    verbose: Boolean = false,
                    debug: Boolean = false,
@@ -43,9 +44,17 @@ object Parser extends App {
       cmd("commit")
         .action((_, c) => c.copy(mode = "commit"))
         .text("Create a new commit containing the current contents of the index and the given log message describing the changes.")
+        .children(
+          opt[String]('m', name = "message")
+            .required()
+            .maxOccurs(1)
+            .action((x, c) => c.copy(commitMessage = x))
+            .text("commit message")
+        )
     )
   }
 
+  val repoPath = Repo.getRepoPath(System.getProperty("user.dir"))
   // OParser.parse returns Option[app.Config]
   OParser.parse(parser1, args, Config()) match {
     case Some(config) =>
@@ -59,7 +68,7 @@ object Parser extends App {
             println("you are not in a sgit repo")
         case "commit" =>
           if (Repo.isInASgitRepo)
-            println(Commit.commit())
+            println(Commit.commit(repoPath.get, config.commitMessage))
           else
             println("you are not in a sgit repo")
         case _ =>

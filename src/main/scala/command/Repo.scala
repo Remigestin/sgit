@@ -64,7 +64,7 @@ object Repo {
       if (path.isEmpty)  None
       else if (new File(path + File.separator + ".sgit").exists()) {
         val indexPath = path + File.separator + ".sgit" + File.separator + "index"
-        createFile(indexPath, "")
+        editFile(indexPath, "")
         Some(new File(indexPath).getAbsolutePath)
 
       } else {

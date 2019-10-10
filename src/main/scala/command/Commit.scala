@@ -1,22 +1,26 @@
 package command
 
 
+import java.io.File
 import java.io.File._
 import java.util.regex.Pattern
 
 import util.IndexUtil._
 import util.FileUtil._
-import util.IndexUtil
+import util.SgitObjectUtil._
+import util.{IndexUtil, SgitObjectUtil}
 
 import scala.annotation.tailrec
 
 
 object Commit {
 
-  def commit(): String = {
+  def commit(repoPath: String, message: String): String = {
 
     //get all the lines of the index files
     val listIndex = readIndexToList()
+
+    val mapIndex = readIndexToMap()
 
     //keep just the list of the paths cut in array.
     val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
@@ -25,15 +29,24 @@ object Commit {
     //sort the list by the greatest number of directories in each path
     val listSorted = listPathsIndex.sortBy(f => f.length).reverse
 
-    val mapIndex = readIndexToMap()
+    val shaTreeCommit = tree(pathsIndex = listSorted, depth = listSorted.head.length, mapIndex = mapIndex, repo = repoPath)
 
-    val shaTreeCommit = tree(pathsIndex = listSorted, depth = listSorted.head.length, mapIndex = mapIndex, repo = Repo.getRepoPath(System.getProperty("user.dir")).get)
+    val pathHead = Repo.getSgitPath(System.getProperty("user.dir")).get + separator + "HEAD"
+    val pathBranch = Repo.getSgitPath(System.getProperty("user.dir")).get + separator + readFileToList(pathHead).head
 
-
-
-
-    ""
-
+    //check if it is the first commit or not and create the commit object
+    if (new File(pathBranch).exists()) {
+      val commitParent = readFileToList(pathBranch).head
+      val contentCommit = "Tree " + shaTreeCommit + "\nParent " + commitParent + "\n\n" + message
+      val shaCommit = createSgitObject(contentCommit)
+      editFile(pathBranch, shaCommit)
+    } else {
+      new File(pathBranch).createNewFile()
+      val contentCommit = "Tree " + shaTreeCommit + "\n\n" + message
+      val shaCommit = createSgitObject(contentCommit)
+      editFile(pathBranch, shaCommit)
+    }
+    "Commit is ok"
   }
 
   /**
@@ -58,7 +71,7 @@ object Commit {
 
       //create the file
       val treeFilePath = repo + separator + ".sgit" + separator + "objects" + separator + sha
-      createFile(path = treeFilePath, content = contentTreeCommit)
+      editFile(path = treeFilePath, content = contentTreeCommit)
 
       //return the sha of the main tree
       sha
@@ -106,7 +119,7 @@ object Commit {
       val contentTreeList = pathsDir.map(d => mapParentPostTreesStep(d) mkString "\n")
 
       //sha1 and write the tree file
-      contentTreeList.map(content => createFile(repo + separator + ".sgit" + separator + "objects" + separator + sha1Hash(content), content))
+      contentTreeList.map(content => editFile(repo + separator + ".sgit" + separator + "objects" + separator + sha1Hash(content), content))
 
       //remove the elements created in this step, ie the element at the size param position in each array.
       val pathsSliced = pathsIndex.map(arr => removeLastMax(arr, depth))
