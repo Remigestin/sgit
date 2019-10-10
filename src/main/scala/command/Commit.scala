@@ -29,10 +29,13 @@ object Commit {
     //sort the list by the greatest number of directories in each path
     val listSorted = listPathsIndex.sortBy(f => f.length).reverse
 
+    //recover the sha of the treeCommit
     val shaTreeCommit = tree(pathsIndex = listSorted, depth = listSorted.head.length, mapIndex = mapIndex, repo = repoPath)
 
     val pathHead = Repo.getSgitPath(System.getProperty("user.dir")).get + separator + "HEAD"
     val pathBranch = Repo.getSgitPath(System.getProperty("user.dir")).get + separator + readFileToList(pathHead).head
+
+
 
     //check if it is the first commit or not and create the commit object
     if (new File(pathBranch).exists()) {
@@ -42,6 +45,7 @@ object Commit {
       editFile(pathBranch, shaCommit)
     } else {
       new File(pathBranch).createNewFile()
+
       val contentCommit = "Tree " + shaTreeCommit + "\n\n" + message
       val shaCommit = createSgitObject(contentCommit)
       editFile(pathBranch, shaCommit)

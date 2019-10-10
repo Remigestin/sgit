@@ -1,22 +1,11 @@
+package parser
+
 import java.io.File
 
 import command.{Add, Commit, Repo}
 import scopt.OParser
+import util.IndexUtil
 
-case class Config(
-                   foo: Int = -1,
-                   out: File = new File("."),
-                   xyz: Boolean = false,
-                   libName: String = "",
-                   commitMessage: String = "",
-                   maxCount: Int = -1,
-                   verbose: Boolean = false,
-                   debug: Boolean = false,
-                   mode: String = "",
-                   files: Seq[String] = Seq(),
-                   keepalive: Boolean = false,
-                   jars: Seq[File] = Seq(),
-                   kwargs: Map[String, String] = Map())
 
 object Parser extends App {
 
@@ -54,27 +43,33 @@ object Parser extends App {
     )
   }
 
-  val repoPath = Repo.getRepoPath(System.getProperty("user.dir"))
-  // OParser.parse returns Option[app.Config]
+
+  // OParser.parse returns Option[app.parser.Config]
   OParser.parse(parser1, args, Config()) match {
     case Some(config) =>
       config.mode match {
         case "init" =>
-          println(Repo.init())
+          println(Repo.init(System.getProperty("user.dir")))
         case "add" =>
-          if (Repo.isInASgitRepo)
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             Add.add(config.files)
           else
-            println("you are not in a sgit repo")
+            ErrorMessage.repoNotFound()
         case "commit" =>
-          if (Repo.isInASgitRepo)
-            println(Commit.commit(repoPath.get, config.commitMessage))
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+            if (IndexUtil.isIndexCreated(System.getProperty("user.dir")))
+
+              println(Commit.commit( Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
+            else
+              ErrorMessage.indexNotCreated()
           else
-            println("you are not in a sgit repo")
+            ErrorMessage.repoNotFound()
         case _ =>
           println("error")
       }
     case _ =>
     //arguments are bad
   }
+
+
 }

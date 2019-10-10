@@ -38,5 +38,9 @@ object IndexUtil {
     (paths zip listSha).toMap
   }
 
+  def isIndexCreated(currentDir: String): Boolean = {
+    new File(Repo.getSgitPath(currentDir) + File.separator + "index").exists()
+  }
+
 }
 

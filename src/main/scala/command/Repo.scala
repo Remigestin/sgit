@@ -10,7 +10,7 @@ import scala.util.matching.Regex
 
 object Repo {
 
-  def init(): String = {
+  def init(currentPath : String): String = {
 
     if (!new File(".sgit/").exists()) {
       val dirs = List(".sgit", ".sgit/branches", ".sgit/tags", ".sgit/objects")
@@ -24,7 +24,7 @@ object Repo {
       pw.close()
 
       //return success message
-      "Initialized empty Sgit repository in " + System.getProperty("user.dir") + File.separator + ".sgit" + File.separator
+      "Initialized empty Sgit repository in " + currentPath + File.separator + ".sgit" + File.separator
 
     } else {
       "This directory was already initialized with Sgit"
@@ -57,13 +57,8 @@ object Repo {
     }
   }
 
-
-
-
-
-
-  def isInASgitRepo: Boolean = {
-    Repo.getRepoPath(System.getProperty("user.dir")).isDefined
+  def isInASgitRepo(curDir: String): Boolean = {
+    getRepoPath(curDir).isDefined
   }
 
 }
