@@ -13,7 +13,7 @@ case class Config(
                    verbose: Boolean = false,
                    debug: Boolean = false,
                    mode: String = "",
-                   files: Seq[File] = Seq(),
+                   files: Seq[String] = Seq(),
                    keepalive: Boolean = false,
                    jars: Seq[File] = Seq(),
                    kwargs: Map[String, String] = Map())
@@ -35,7 +35,7 @@ object Parser extends App {
         .action((_, c) => c.copy(mode = "add"))
         .text("adds the files to the index")
         .children(
-          arg[File]("<file>...")
+          arg[String]("<file>...")
             .required()
             .unbounded()
             .action((x, c) => c.copy(files = c.files :+ x))

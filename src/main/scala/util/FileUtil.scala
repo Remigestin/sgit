@@ -12,17 +12,10 @@ import scala.annotation.tailrec
 object FileUtil {
 
 
-  def recursiveListFiles(f: File, r: Regex): Array[File] = {
+  import java.io.File
+  def recursiveListFiles(f: File): Array[File] = {
     val these = f.listFiles
-    val good = these.filter(f => r.findFirstIn(f.getName).isDefined)
-    good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, r))
-  }
-
-  def escapeMetaCharacters(inputString: String): String = {
-    val rep = inputString
-    val metaCharacters = Array("^", "$", "{", "}", "[", "]", "(", ")", ".", "*", "+", "?", "|", "<", ">", "-", "&", "%")
-    metaCharacters.foreach(c => if (rep.contains(c)) rep.replace(c, "/" + c))
-    rep
+    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles _)
   }
 
   def sha1Hash(s: String): String = {

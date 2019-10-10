@@ -3,7 +3,7 @@ package command
 import java.io.{File, FileOutputStream, FileWriter, PrintWriter}
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
-import util.FileUtil
+import util.{FileUtil, IndexUtil}
 import util.IndexUtil._
 
 import scala.annotation.tailrec
@@ -11,38 +11,23 @@ import scala.io.Source
 
 object Add {
 
-  def add(files: Seq[File]): String = {
+  def add(files: Seq[String]): Unit = {
 
-    // retrieve the index file path
-    val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
+
+    // retrieve the index file path and create it if it is not
+    val indexPath = getIndexPath(System.getProperty("user.dir")).get
 
     //For each pattern after the sgit add, we retrieve the path of all the corresponding files
-    val pathList = getListPaths(files)
+    val filesListCurDir = files.map(f => new File(f)).filter(_.isFile)
+    val dirsListCurDir = files.map(f => new File(f)).filter(_.isDirectory)
+    val allFilesListBrut = filesListCurDir ++ dirsListCurDir.flatMap(d => FileUtil.recursiveListFiles(d)).toList
+    val pathsAllFilesList = allFilesListBrut.filter(_.isFile).filter(f=> !f.getAbsolutePath.contains(".sgit")).map(_.getAbsolutePath)
 
 
     //Create Blob file and edit index file for each path
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    pathsAllFilesList.foreach(p => addBlob(p.replace(repoPath + File.separator, "")))
 
-
-    pathList.foreach(p => addBlob(p.replace(repoPath + File.separator, "")))
-
-    "hey"
-  }
-
-  //TODO : glob
-  //For each pattern after the sgit add, we get the path of all the corresponding files
-  def getListPaths(files: Seq[File]): List[String] = {
-    @tailrec
-    def loop(listPath: List[String], f: Seq[File]): List[String] = {
-      f match {
-        case Nil => listPath
-        case head :: tail =>
-          val list = FileUtil.recursiveListFiles(new File(System.getProperty("user.dir")), head.getName.r).filter(a => a.isFile).map(a => a.getAbsolutePath)
-          loop(listPath ++ list, tail)
-      }
-    }
-
-    loop(List[String](), files)
   }
 
   //Create Blob file and edit index file for each path
@@ -82,7 +67,7 @@ object Add {
   def updateIndex(hash: String, path: String): Unit = {
 
     //retrieve the path of the index file
-    val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
+    val indexPath = getIndexPath(System.getProperty("user.dir")).get
 
     //remove the old line
     removeIfPathAlreadyIndexed(path)
@@ -104,7 +89,7 @@ object Add {
     val lines = readIndexToList() mkString "\n"
 
     if (lines.contains(path)) {
-      val indexPath = Repo.getIndexPath(System.getProperty("user.dir")).get
+      val indexPath = getIndexPath(System.getProperty("user.dir")).get
       val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
       val fw = new FileWriter(indexPath, false)
       linesList.foreach(ll => fw.write(ll + "\n"))
