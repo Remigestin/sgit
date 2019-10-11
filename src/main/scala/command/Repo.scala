@@ -20,7 +20,7 @@ object Repo {
 
       //init the file HEAD with the future branch master
       val pw = new PrintWriter(new File(".sgit/HEAD"))
-      pw.write("branches/master")
+      pw.write("branches" + File.separator + "master")
       pw.close()
 
       //return success message
@@ -32,24 +32,11 @@ object Repo {
 
   }
 
-
-  @tailrec
-  def getSgitPath(path: String): Option[String] = {
-    if (path.isEmpty)  None
-    else if (new File(path + File.separator + ".sgit").exists()) {
-      Some(new File(path + File.separator + ".sgit").getAbsolutePath)
-    } else {
-      val parent = new File(path).getParentFile
-      if (!parent.getName.isEmpty) getSgitPath(parent.getAbsolutePath)
-      else getSgitPath("")
-    }
-  }
-
   @tailrec
   def getRepoPath(path: String): Option[String] = {
     if (path.isEmpty) None
     else if (new File(path + File.separator + ".sgit").exists()) {
-      Some(new File(path).getAbsolutePath)
+      Some(path)
     } else {
       val parent = new File(path).getParentFile
       if (!parent.getName.isEmpty) getRepoPath(parent.getAbsolutePath)

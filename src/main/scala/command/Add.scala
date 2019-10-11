@@ -3,98 +3,78 @@ package command
 import java.io.{File, FileOutputStream, FileWriter, PrintWriter}
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
-import util.{FileUtil, IndexUtil}
+import util.FileUtil._
 import util.IndexUtil._
+import util.SgitObjectUtil
 
 import scala.annotation.tailrec
 import scala.io.Source
 
 object Add {
 
-  def add(files: Seq[String]): Unit = {
+  def add(repoPath: String, files: Seq[String]): Unit = {
 
 
     // retrieve the index file path and create it if it is not
-    val indexPath = getIndexPath(System.getProperty("user.dir")).get
+    val indexPath = getIndexPath(repoPath).get
 
     //For each pattern after the sgit add, we retrieve the path of all the corresponding files
     val filesListCurDir = files.map(f => new File(f)).filter(_.isFile)
     val dirsListCurDir = files.map(f => new File(f)).filter(_.isDirectory)
-    val allFilesListBrut = filesListCurDir ++ dirsListCurDir.flatMap(d => FileUtil.recursiveListFiles(d)).toList
-    val pathsAllFilesList = allFilesListBrut.filter(_.isFile).filter(f=> !f.getAbsolutePath.contains(".sgit")).map(_.getAbsolutePath)
-
+    val allFilesListBrut = filesListCurDir ++ dirsListCurDir.flatMap(d => recursiveListFiles(d)).toList
+    val pathsAllFilesList = allFilesListBrut.filter(_.isFile).filter(f => !f.getAbsolutePath.contains(".sgit")).map(_.getAbsolutePath)
 
     //Create Blob file and edit index file for each path
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
-    pathsAllFilesList.foreach(p => addBlob(p.replace(repoPath + File.separator, "")))
+    pathsAllFilesList.foreach(p => addBlob(repoPath, p.replace(repoPath + File.separator, "")))
 
   }
 
   //Create Blob file and edit index file for each path
-  def addBlob(path: String): Unit = {
+  def addBlob(repoPath: String, path: String): Unit = {
 
     //retrieve content of the file
-    val source = scala.io.Source.fromFile(Repo.getRepoPath(System.getProperty("user.dir")).get + File.separator + path)
-    val lines = try source.getLines mkString "\n" finally source.close()
+    val content = readFileToList(repoPath + File.separator + path) mkString "\n"
 
     //create the hash with the content of the file
-    val hash = FileUtil.sha1Hash(lines)
+    val hash = sha1Hash(content)
 
     //check if the file is not already indexed with the same content(hash)
-    if (!isAlreadyIndexed(hash, path)) {
+    if (!isAlreadyIndexed(repoPath, hash, path)) {
 
-      //create the path of the blob file
-      val dirSgit = Repo.getSgitPath(System.getProperty("user.dir")).get
-      val blobPath = dirSgit + File.separator + "objects" + File.separator + hash
 
       //if the blob does not exist, we create the blob file
-      if (!new File(blobPath).exists()) {
-
-        //create the blob file
-        new File(blobPath).createNewFile()
-
-        //fill the blob file
-        val fw = new FileWriter(blobPath, true)
-        fw.write(lines)
-        fw.close()
-      }
+     SgitObjectUtil.createSgitObject(repoPath, content)
 
       //update the index file
-      updateIndex(hash, path)
+      updateIndex(repoPath, hash, path)
     }
   }
 
-  def updateIndex(hash: String, path: String): Unit = {
+  def updateIndex(repoPath: String, hash: String, path: String): Unit = {
 
     //retrieve the path of the index file
-    val indexPath = getIndexPath(System.getProperty("user.dir")).get
+    val indexPath = getIndexPath(repoPath).get
 
     //remove the old line
-    removeIfPathAlreadyIndexed(path)
+    removeIfPathAlreadyIndexed(repoPath, path)
 
     //add in the index file the line with the hash and the path
-    val fw = new FileWriter(indexPath, true)
-    fw.write(hash + " " + path + "\n")
-    fw.close()
-
+    val lineBlob = hash + " " + path + "\n"
+    editFile(indexPath, lineBlob, append = true)
   }
 
-  def isAlreadyIndexed(hash: String, path: String): Boolean = {
-    val lines = readIndexToList() mkString "\n"
+  def isAlreadyIndexed(repoPath:String, hash: String, path: String): Boolean = {
+    val lines = readIndexToList(repoPath) mkString "\n"
     lines.contains(hash + " " + path)
   }
 
-  def removeIfPathAlreadyIndexed(path: String): Unit = {
-
-    val lines = readIndexToList() mkString "\n"
-
+  def removeIfPathAlreadyIndexed(repoPath: String, path: String): Unit = {
+    val lines = readIndexToList(repoPath) mkString "\n"
     if (lines.contains(path)) {
-      val indexPath = getIndexPath(System.getProperty("user.dir")).get
+      val indexPath = getIndexPath(repoPath).get
       val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
-      val fw = new FileWriter(indexPath, false)
-      linesList.foreach(ll => fw.write(ll + "\n"))
-      fw.close()
-
+      val content = linesList mkString "\n"
+      editFile(indexPath, content, append = true)
     }
   }
 

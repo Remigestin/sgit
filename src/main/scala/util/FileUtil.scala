@@ -13,6 +13,7 @@ object FileUtil {
 
 
   import java.io.File
+
   def recursiveListFiles(f: File): Array[File] = {
     val these = f.listFiles
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles _)
@@ -33,7 +34,7 @@ object FileUtil {
    * @param content : the content to edited in the file
    *                edit the object passed in the path param with the content param. Create the file if it's not.
    */
-  def editFile(path: String, content: String): Unit = {
+  def editFile(path: String, content: String, append: Boolean): Unit = {
 
     if (!new File(path).exists()) {
       //create the file
@@ -41,11 +42,12 @@ object FileUtil {
     }
     if (!content.isEmpty) {
       //fill the file
-      val fw = new FileWriter(path, false)
+      val fw = new FileWriter(path, append)
       fw.write(content)
       fw.close()
     }
   }
+
 
   def readFileToList(path: String): List[String] = {
     val source = scala.io.Source.fromFile(path)

@@ -52,14 +52,13 @@ object Parser extends App {
           println(Repo.init(System.getProperty("user.dir")))
         case "add" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            Add.add(config.files)
+            Add.add(Repo.getRepoPath(System.getProperty("user.dir")).get, config.files)
           else
             ErrorMessage.repoNotFound()
         case "commit" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            if (IndexUtil.isIndexCreated(System.getProperty("user.dir")))
-
-              println(Commit.commit( Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
+            if (IndexUtil.isIndexCreated(Repo.getRepoPath(System.getProperty("user.dir")).get))
+              println(Commit.commit(Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
             else
               ErrorMessage.indexNotCreated()
           else
