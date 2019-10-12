@@ -12,11 +12,6 @@ object BranchUtil {
     pathBranch.split(separatorSplit).last
   }
 
-  def getCurrentBranchLastCommit(repoPath: String): String = {
-    //TODO
-    ""
-  }
-
   def getCurrentBranchPath(repoPath: String): String = {
     val pathHead = repoPath + separator + ".sgit"  + separator + "HEAD"
     repoPath + separator + ".sgit" + separator + readFileToList(pathHead).head
