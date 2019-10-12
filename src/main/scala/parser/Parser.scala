@@ -2,7 +2,7 @@ package parser
 
 import java.io.File
 
-import command.{Add, Commit, Repo}
+import command.{Add, Commit, Repo, Status}
 import scopt.OParser
 import util.IndexUtil
 
@@ -39,7 +39,10 @@ object Parser extends App {
             .maxOccurs(1)
             .action((x, c) => c.copy(commitMessage = x))
             .text("commit message")
-        )
+        ),
+      cmd("status")
+        .action((_, c) => c.copy(mode = "status"))
+        .text("list the status of the repo"),
     )
   }
 
@@ -63,6 +66,10 @@ object Parser extends App {
               ErrorMessage.indexNotCreated()
           else
             ErrorMessage.repoNotFound()
+
+        case "status" =>
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+            println(Status.status(System.getProperty("user.dir")))
         case _ =>
           println("error")
       }

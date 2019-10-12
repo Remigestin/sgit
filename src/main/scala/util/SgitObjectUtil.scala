@@ -20,4 +20,8 @@ object SgitObjectUtil {
     sha
   }
 
+  def readSgitObjectToList(repoPath: String, sha: String): List[String] = {
+    readFileToList(repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + sha)
+  }
+
 }

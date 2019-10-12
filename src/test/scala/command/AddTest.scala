@@ -105,4 +105,12 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
     assert(shaPreviousModif != shaAfterModif)
   }
 
+  it should "not add a line in INDEX if arguments do not match any files" in {
+    val currentDir = System.getProperty("user.dir")
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    Add.add(repoPath, Seq("anything"))
+    val indexLines = IndexUtil.readIndexToList(repoPath)
+    assert(indexLines.isEmpty)
+  }
+
 }
