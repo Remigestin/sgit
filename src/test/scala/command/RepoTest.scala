@@ -25,7 +25,7 @@ class RepoTest extends FlatSpec with BeforeAndAfterEach {
   }
 
 
-  "A Repository" should "create the .sgit directory with the right structure" in {
+  "The init command" should "create the .sgit directory with the right structure" in {
     assert(new File(".sgit").exists())
     assert(new File(".sgit" + File.separator + "objects").exists())
     assert(new File(".sgit" + File.separator + "branches").exists())

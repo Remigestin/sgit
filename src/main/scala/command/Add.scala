@@ -74,7 +74,7 @@ object Add {
       val indexPath = getIndexPath(repoPath).get
       val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
       val content = linesList mkString "\n"
-      editFile(indexPath, content, append = true)
+      editFile(indexPath, content + "\n", append = false)
     }
   }
 
