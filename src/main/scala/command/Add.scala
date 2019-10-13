@@ -69,12 +69,15 @@ object Add {
   }
 
   def removeIfPathAlreadyIndexed(repoPath: String, path: String): Unit = {
-    val lines = readIndexToList(repoPath) mkString "\n"
-    if (lines.contains(path)) {
+    val lines = readIndexToList(repoPath)
+    val indexString = lines mkString "\n"
+    if (indexString.contains(path)) {
       val indexPath = getIndexPath(repoPath).get
-      val linesList = lines.split("\n").toList.filter(l => !l.contains(path))
-      val content = linesList mkString "\n"
-      editFile(indexPath, content + "\n", append = false)
+      val linesList = lines.filter(l => !l.contains(path))
+      if (linesList.isEmpty)
+        editFile(indexPath, "", append = false)
+      else
+        editFile(indexPath, linesList mkString "\n", append = false)
     }
   }
 

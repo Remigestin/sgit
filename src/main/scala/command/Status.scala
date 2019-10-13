@@ -5,7 +5,7 @@ import java.util.regex.Pattern
 
 import util.{CommitUtil, FileUtil, IndexUtil}
 import util.FileUtil.recursiveListFiles
-import util.IndexUtil.readIndexToList
+import util.IndexUtil._
 
 object Status {
 
@@ -13,7 +13,7 @@ object Status {
 
     val repoPath = Repo.getRepoPath(curDir).get
 
-    getAllPathTrackedNeverCommitted(repoPath)
+    getAllPathTrackedAndCommittedModified(repoPath)
 
   }
 
@@ -35,6 +35,7 @@ object Status {
       .map(_.getAbsolutePath)
       .map(_.replace(repoPath + File.separator, ""))
 
+    //filter all the path files which are not in the index
     val pathsUntracked = pathsAllFilesRepoList.filter(!indexContent.contains(_))
 
     pathsUntracked
@@ -42,7 +43,7 @@ object Status {
 
   def getAllPathsTrackedModifiedNotAdd(repoPath: String) : List[String] = {
     val indexList = readIndexToList(repoPath)
-    val indexMap = IndexUtil.readIndexToMap(repoPath)
+    val indexMap = readIndexToMap(repoPath)
 
     val srcIndex = indexList.map(_.split(" ")(1))
 
@@ -65,7 +66,7 @@ object Status {
 
     val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
 
-    srcIndex.filterNot(CommitUtil.hashOfBlobInTheCommit(repoPath, _, lastTreeCommit).isDefined)
+    srcIndex.filterNot(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).isDefined)
 
 
   }
@@ -73,14 +74,17 @@ object Status {
   def getAllPathTrackedAndCommittedModified(repoPath:String) : List[String] = {
 
     val indexList = readIndexToList(repoPath)
+    val indexMap = readIndexToMap(repoPath)
 
     val srcIndex = indexList.map(_.split(" ")(1))
 
     val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
 
+    val listHashCommit = srcIndex.map(CommitUtil.getHashOfPathInTheCommit(repoPath,_, lastTreeCommit).getOrElse("not in commit") )
 
+    val mapCommit = (srcIndex zip listHashCommit).toMap.filterNot(m => m._2 == "not in commit")
 
-
+    mapCommit.filter(m =>  indexMap(m._1) != m._2).keys.toList
   }
 
 }

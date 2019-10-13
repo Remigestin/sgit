@@ -47,12 +47,12 @@ object FileUtil {
       //create the file
       new File(path).createNewFile()
     }
-    if (!content.isEmpty) {
-      //fill the file
-      val fw = new FileWriter(path, append)
-      fw.write(content)
-      fw.close()
-    }
+
+    //fill the file
+    val fw = new FileWriter(path, append)
+    fw.write(content)
+    fw.close()
+
   }
 
 

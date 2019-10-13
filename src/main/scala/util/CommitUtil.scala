@@ -21,11 +21,13 @@ object CommitUtil {
   }
 
   @tailrec
-  def hashOfBlobInTheCommit(repoPath: String, pathToFind: String, shaTree: String, depth: Int = 0): Option[String] = {
+  def getHashOfPathInTheCommit(repoPath: String, pathToFind: String, shaTree: String): Option[String] = {
     val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
-    if (depth == pathToFind.split(separatorSplit).length -1) {
+    val pathToFindTab = pathToFind.split(separatorSplit).toList
 
-      val nameBlobToFind = pathToFind.split(separatorSplit)(depth)
+    if (pathToFindTab.length == 1) {
+
+      val nameBlobToFind = pathToFindTab.head
       val treeContent = readSgitObjectToList(repoPath, shaTree)
       val treeContentWithOnlyBlob = treeContent.filter(_.split(" ")(0) == "blob")
 
@@ -39,7 +41,7 @@ object CommitUtil {
       }
 
     } else {
-      val nameTreeToFind = pathToFind.split(separatorSplit)(depth)
+      val nameTreeToFind = pathToFindTab.head
       val treeContent = readSgitObjectToList(repoPath, shaTree)
       val treeContentWithOnlyTree = treeContent.filter(_.split(" ")(0) == "tree")
 
@@ -49,7 +51,8 @@ object CommitUtil {
         None
       } else {
         val shaTreeToFind = lineTreeToFind.head.split(" ")(1)
-        hashOfBlobInTheCommit(repoPath, pathToFind, shaTreeToFind, depth + 1)
+        val pathToFindDeeper = pathToFindTab.tail mkString File.separator
+        getHashOfPathInTheCommit(repoPath, pathToFindDeeper, shaTreeToFind)
       }
     }
   }
