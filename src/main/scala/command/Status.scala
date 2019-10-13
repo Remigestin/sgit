@@ -1,6 +1,7 @@
 package command
 
 import java.io.File
+import java.nio.file.Paths
 import java.util.regex.Pattern
 
 import util.{CommitUtil, FileUtil, IndexUtil}
@@ -14,11 +15,11 @@ object Status {
     val repoPath = Repo.getRepoPath(curDir).get
 
 
-    val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + (getAllPathsUntracked(repoPath) mkString "\n")
-    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" + (getAllPathsTrackedModifiedNotAdd(repoPath).map("modified:   " + _) mkString "\n")
+    val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + (getAllPathsUntracked(repoPath, curDir) mkString "\n")
+    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" + (getAllPathsTrackedModifiedNotAdd(repoPath, curDir).map("modified:   " + _) mkString "\n")
 
 
-    val toBeCommitted = "Changes to be committed:\n\n" + (getAllPathTrackedNeverCommitted(repoPath).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath).map("modified:   " + _) mkString "\n")
+    val toBeCommitted = "Changes to be committed:\n\n" + (getAllPathTrackedNeverCommitted(repoPath, curDir).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath, curDir).map("modified:   " + _) mkString "\n")
 
     toBeCommitted + "\n\n" + trackedModifiedNotAdd + "\n\n" + untracked
 
@@ -30,7 +31,7 @@ object Status {
    * @param repoPath : the path of the current sgit repo
    * @return the list of the path of all the files (in the sgit repo in parm) which are not tracked by sgit
    */
-  def getAllPathsUntracked(repoPath: String): List[String] = {
+  def getAllPathsUntracked(repoPath: String, curDir: String): List[String] = {
 
     //recover the content of the index file
     val indexContent = readIndexToList(repoPath) mkString "\n"
@@ -46,10 +47,10 @@ object Status {
     //filter all the path files which are not in the index
     val pathsUntracked = pathsAllFilesRepoList.filter(!indexContent.contains(_))
 
-    pathsUntracked
+    relativizeAListOfPath(repoPath, curDir, pathsUntracked)
   }
 
-  def getAllPathsTrackedModifiedNotAdd(repoPath: String): List[String] = {
+  def getAllPathsTrackedModifiedNotAdd(repoPath: String, curDir: String): List[String] = {
     val indexList = readIndexToList(repoPath)
     val indexMap = readIndexToMap(repoPath)
 
@@ -62,11 +63,13 @@ object Status {
 
     val mapNewShas = (srcIndex zip newShas).toMap
 
-    mapNewShas.filter(m => indexMap(m._1) != m._2).keys.toList
+    val paths = mapNewShas.filter(m => indexMap(m._1) != m._2).keys.toList
+
+    relativizeAListOfPath(repoPath, curDir, paths)
 
   }
 
-  def getAllPathTrackedNeverCommitted(repoPath: String): List[String] = {
+  def getAllPathTrackedNeverCommitted(repoPath: String, curDir: String): List[String] = {
 
     val indexList = readIndexToList(repoPath)
 
@@ -74,15 +77,16 @@ object Status {
 
     if (CommitUtil.isThereACommit(repoPath)) {
       val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
-      srcIndex.filterNot(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).isDefined)
+      val paths = srcIndex.filterNot(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).isDefined)
+      relativizeAListOfPath(repoPath, curDir, paths)
     } else {
-      srcIndex
+      relativizeAListOfPath(repoPath, curDir, srcIndex)
     }
 
 
   }
 
-  def getAllPathTrackedAndCommittedModified(repoPath: String): List[String] = {
+  def getAllPathTrackedAndCommittedModified(repoPath: String, curDir: String): List[String] = {
 
     val indexList = readIndexToList(repoPath)
     val indexMap = readIndexToMap(repoPath)
@@ -96,11 +100,17 @@ object Status {
       val listHashCommit = srcIndex.map(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).getOrElse("not in commit"))
 
       val mapCommit = (srcIndex zip listHashCommit).toMap.filterNot(m => m._2 == "not in commit")
+      val paths = mapCommit.filter(m => indexMap(m._1) != m._2).keys.toList
 
-      mapCommit.filter(m => indexMap(m._1) != m._2).keys.toList
+      relativizeAListOfPath(repoPath, curDir, paths)
     } else {
       List()
     }
+  }
+
+  def relativizeAListOfPath(repoPath: String, curDir: String, list: List[String]): List[String] = {
+
+    list.map(s => Paths.get(curDir).relativize(Paths.get(repoPath + File.separator + s)).toString)
   }
 
 }

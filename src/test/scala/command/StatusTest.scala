@@ -28,43 +28,49 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   "The status command" should "recover all the files untracked" in {
+    val curdir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
-    val testFilePathRel =  ".test" + File.separator + "test"
-    val testFilePathRel2 =  ".test" + File.separator + "test2"
-    val res = Status.getAllPathsUntracked(repoPath)
+    val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 =  repoPath + File.separator + ".test" + File.separator + "test2"
+    val res = Status.getAllPathsUntracked(repoPath, curdir)
 
-    assert(res.contains(testFilePathRel))
-    assert(res.contains(testFilePathRel2))
+    val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
+    val pathRel2 = Paths.get(curdir).relativize(Paths.get(testFilePath2)).toString
+
+    assert(res.contains(pathRel))
+    assert(res.contains(pathRel2))
   }
 
   it should "recover all indexed files edited but not added" in {
-
+    val curdir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
 
     FileUtil.editFile(testFilePath,"this is an edit", append = true)
 
-    val res = Status.getAllPathsTrackedModifiedNotAdd(repoPath)
-    val pathRel = testFilePath.replace(repoPath + File.separator, "")
+    val res = Status.getAllPathsTrackedModifiedNotAdd(repoPath, curdir)
+    val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
 
     assert(res.contains(pathRel))
 
   }
 
   it should "recover all files added but never committed (if there was 0 commit before)" in {
+    val curdir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
 
-    val res = Status.getAllPathTrackedNeverCommitted(repoPath)
-    val pathRel = testFilePath.replace(repoPath + File.separator, "")
+    val res = Status.getAllPathTrackedNeverCommitted(repoPath, curdir)
+    val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
 
     assert(res.contains(pathRel))
 
   }
 
   it should "recover all files added but never committed (if there was commits before)" in {
+    val curdir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + ".test" + File.separator + "test2"
@@ -72,25 +78,27 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     Commit.commit(repoPath, "commit 1")
 
     Add.add(repoPath, Seq(testFilePath2))
-    val res = Status.getAllPathTrackedNeverCommitted(repoPath)
-    val pathRel2 = testFilePath2.replace(repoPath + File.separator, "")
+    val res = Status.getAllPathTrackedNeverCommitted(repoPath, curdir)
+    val pathRel2 = Paths.get(curdir).relativize(Paths.get(testFilePath2)).toString
 
     assert(res.contains(pathRel2))
 
   }
 
   it should "recover all files added, but different from the last commit (if there was 0 commit before)" in {
+    val curdir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
-    val res = Status.getAllPathTrackedAndCommittedModified(repoPath)
+    val res = Status.getAllPathTrackedAndCommittedModified(repoPath, curdir)
+
 
     assert(res.isEmpty)
 
   }
 
   it should "recover all files added, but different from the last commit (if there was commits before)" in {
-
+    val curdir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
@@ -98,8 +106,8 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     FileUtil.editFile(testFilePath, "ceci est une modif", append = true)
     Add.add(repoPath,Seq(testFilePath))
 
-    val res = Status.getAllPathTrackedAndCommittedModified(repoPath)
-    val pathRel = testFilePath.replace(repoPath + File.separator, "")
+    val res = Status.getAllPathTrackedAndCommittedModified(repoPath, curdir)
+    val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
 
     assert(res.contains(pathRel))
   }
