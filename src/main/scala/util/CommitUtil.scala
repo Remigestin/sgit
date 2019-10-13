@@ -11,6 +11,11 @@ import scala.annotation.tailrec
 
 object CommitUtil {
 
+  def getLastCommitObject(repoPath: String): String = {
+    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
+    readFileToList(pathBranch).head
+  }
+
   def getLastCommitTree(repoPath: String): String = {
 
     val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)

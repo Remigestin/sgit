@@ -2,9 +2,9 @@ package parser
 
 import java.io.File
 
-import command.{Add, Commit, Repo, Status}
+import command.{Add, Commit, Repo, Status, Tag}
 import scopt.OParser
-import util.IndexUtil
+import util.{CommitUtil, IndexUtil}
 import parser.ErrorMessage._
 
 
@@ -44,6 +44,16 @@ object Parser extends App {
       cmd("status")
         .action((_, c) => c.copy(mode = "status"))
         .text("list the status of the repo"),
+      cmd("tag")
+        .action((_, c) => c.copy(mode = "tag"))
+        .text("adds the files to the index")
+        .children(
+          arg[String]("name")
+            .required()
+            .maxOccurs(1)
+            .action((x, c) => c.copy(libName = x))
+            .text("create tag for the current commit")
+        ),
     )
   }
 
@@ -73,6 +83,15 @@ object Parser extends App {
         case "status" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             println(Status.status(System.getProperty("user.dir")))
+          else
+            repoNotFound()
+
+        case "tag" =>
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+            if (CommitUtil.isThereACommit(Repo.getRepoPath(System.getProperty("user.dir")).get))
+              println(Tag.tag(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName))
+            else
+              noCommit()
           else
             repoNotFound()
         case _ =>
