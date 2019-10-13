@@ -77,7 +77,7 @@ object Add {
       if (linesList.isEmpty)
         editFile(indexPath, "", append = false)
       else
-        editFile(indexPath, linesList mkString "\n", append = false)
+        editFile(indexPath, (linesList mkString "\n") + "\n", append = false)
     }
   }
 

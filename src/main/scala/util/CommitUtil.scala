@@ -14,10 +14,15 @@ object CommitUtil {
   def getLastCommitTree(repoPath: String): String = {
 
     val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
-    val commitParent = readFileToList(pathBranch).head
+    val commit = readFileToList(pathBranch).head
 
-    val tree = readFileToList(repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + commitParent).head.split(" ")(1)
+    val tree = readFileToList(repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + commit).head.split(" ")(1)
     tree
+  }
+
+  def isThereACommit(repoPath: String): Boolean = {
+    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
+    new File(pathBranch).exists()
   }
 
   @tailrec

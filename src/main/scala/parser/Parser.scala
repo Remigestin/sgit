@@ -5,6 +5,7 @@ import java.io.File
 import command.{Add, Commit, Repo, Status}
 import scopt.OParser
 import util.IndexUtil
+import parser.ErrorMessage._
 
 
 object Parser extends App {
@@ -53,23 +54,27 @@ object Parser extends App {
       config.mode match {
         case "init" =>
           println(Repo.init(System.getProperty("user.dir")))
+
         case "add" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             Add.add(Repo.getRepoPath(System.getProperty("user.dir")).get, config.files)
           else
-            ErrorMessage.repoNotFound()
+            repoNotFound()
+
         case "commit" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             if (IndexUtil.isIndexCreated(Repo.getRepoPath(System.getProperty("user.dir")).get))
               println(Commit.commit(Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
             else
-              ErrorMessage.indexNotCreated()
+              indexNotCreated()
           else
-            ErrorMessage.repoNotFound()
+            repoNotFound()
 
         case "status" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             println(Status.status(System.getProperty("user.dir")))
+          else
+            repoNotFound()
         case _ =>
           println("error")
       }

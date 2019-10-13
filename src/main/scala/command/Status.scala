@@ -9,11 +9,19 @@ import util.IndexUtil._
 
 object Status {
 
-  def status(curDir: String): List[String] = {
+  def status(curDir: String): String = {
 
     val repoPath = Repo.getRepoPath(curDir).get
 
-    getAllPathTrackedAndCommittedModified(repoPath)
+
+    val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + (getAllPathsUntracked(repoPath) mkString "\n")
+    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" + (getAllPathsTrackedModifiedNotAdd(repoPath).map("modified:   " + _) mkString "\n")
+
+
+    val toBeCommitted = "Changes to be committed:\n\n" + (getAllPathTrackedNeverCommitted(repoPath).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath).map("modified:   " + _) mkString "\n")
+
+    toBeCommitted + "\n\n" + trackedModifiedNotAdd + "\n\n" + untracked
+
 
   }
 
@@ -41,7 +49,7 @@ object Status {
     pathsUntracked
   }
 
-  def getAllPathsTrackedModifiedNotAdd(repoPath: String) : List[String] = {
+  def getAllPathsTrackedModifiedNotAdd(repoPath: String): List[String] = {
     val indexList = readIndexToList(repoPath)
     val indexMap = readIndexToMap(repoPath)
 
@@ -54,7 +62,7 @@ object Status {
 
     val mapNewShas = (srcIndex zip newShas).toMap
 
-    mapNewShas.filter(m =>  indexMap(m._1) != m._2).keys.toList
+    mapNewShas.filter(m => indexMap(m._1) != m._2).keys.toList
 
   }
 
@@ -64,27 +72,35 @@ object Status {
 
     val srcIndex = indexList.map(_.split(" ")(1))
 
-    val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
-
-    srcIndex.filterNot(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).isDefined)
+    if (CommitUtil.isThereACommit(repoPath)) {
+      val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
+      srcIndex.filterNot(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).isDefined)
+    } else {
+      srcIndex
+    }
 
 
   }
 
-  def getAllPathTrackedAndCommittedModified(repoPath:String) : List[String] = {
+  def getAllPathTrackedAndCommittedModified(repoPath: String): List[String] = {
 
     val indexList = readIndexToList(repoPath)
     val indexMap = readIndexToMap(repoPath)
 
     val srcIndex = indexList.map(_.split(" ")(1))
 
-    val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
+    if (CommitUtil.isThereACommit(repoPath)) {
 
-    val listHashCommit = srcIndex.map(CommitUtil.getHashOfPathInTheCommit(repoPath,_, lastTreeCommit).getOrElse("not in commit") )
+      val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
 
-    val mapCommit = (srcIndex zip listHashCommit).toMap.filterNot(m => m._2 == "not in commit")
+      val listHashCommit = srcIndex.map(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).getOrElse("not in commit"))
 
-    mapCommit.filter(m =>  indexMap(m._1) != m._2).keys.toList
+      val mapCommit = (srcIndex zip listHashCommit).toMap.filterNot(m => m._2 == "not in commit")
+
+      mapCommit.filter(m => indexMap(m._1) != m._2).keys.toList
+    } else {
+      List()
+    }
   }
 
 }

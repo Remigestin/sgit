@@ -15,6 +15,7 @@ object BranchUtil {
   def getCurrentBranchPath(repoPath: String): String = {
     val pathHead = repoPath + separator + ".sgit"  + separator + "HEAD"
     repoPath + separator + ".sgit" + separator + readFileToList(pathHead).head
+
   }
 
 

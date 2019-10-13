@@ -21,8 +21,7 @@ object IndexUtil {
 
   def readIndexToList(repoPath: String): List[String] = {
     val indexPath = getIndexPath(repoPath).get
-    val source = scala.io.Source.fromFile(indexPath)
-    try source.getLines.toList finally source.close()
+    FileUtil.readFileToList(indexPath)
   }
 
   def readIndexToMap(repoPath: String): Map[String, String] = {
