@@ -108,6 +108,14 @@ object Status {
     }
   }
 
+  def getAllDeletionsNotStaged(repoPath: String, curDir: String): List[String] = {
+
+    val indexList = readIndexToList(repoPath)
+    val srcIndex = indexList.map(_.split(" ")(1))
+    val list = srcIndex.filterNot(new File(_).exists())
+    relativizeAListOfPath(repoPath, curDir, list)
+  }
+
   def relativizeAListOfPath(repoPath: String, curDir: String, list: List[String]): List[String] = {
 
     list.map(s => Paths.get(curDir).relativize(Paths.get(repoPath + File.separator + s)).toString)

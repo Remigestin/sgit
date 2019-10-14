@@ -33,7 +33,7 @@ class DiffTest extends FlatSpec with BeforeAndAfterEach {
 
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
-   println(Diff.ConstructMatrix(FileUtil.readFileToList(testFilePath), FileUtil.readFileToList(testFilePath2)))
+  Diff.ConstructMatrix(FileUtil.readFileToList(testFilePath), FileUtil.readFileToList(testFilePath2))
 
   }
 

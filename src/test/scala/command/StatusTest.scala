@@ -98,7 +98,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "recover all files added, but different from the last commit (if there was commits before)" in {
-    val curdir = System.getProperty("user.dir")
+    val curDir = System.getProperty("user.dir")
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
@@ -106,10 +106,41 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     FileUtil.editFile(testFilePath, "ceci est une modif", append = true)
     Add.add(repoPath,Seq(testFilePath))
 
-    val res = Status.getAllPathTrackedAndCommittedModified(repoPath, curdir)
-    val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
+    val res = Status.getAllPathTrackedAndCommittedModified(repoPath, curDir)
+    val pathRel = Paths.get(curDir).relativize(Paths.get(testFilePath)).toString
 
     assert(res.contains(pathRel))
+  }
+
+  it should "recover all files in the index but which not exists anymore (with one file)" in {
+
+    val curDir = System.getProperty("user.dir")
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
+    Add.add(repoPath,Seq(testFilePath))
+
+    new File(testFilePath).delete()
+
+    val res = Status.getAllDeletionsNotStaged(repoPath, curDir)
+
+    assert(res.length == 1)
+    assert(res.head == ".test" + File.separator + "test")
+  }
+
+  it should "recover all files in the index but which not exists anymore (with multi files)" in {
+
+    val curDir = System.getProperty("user.dir")
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 =  repoPath + File.separator + ".test" + File.separator + "test2"
+    Add.add(repoPath,Seq(testFilePath, testFilePath2))
+
+    new File(testFilePath).delete()
+
+    val res = Status.getAllDeletionsNotStaged(repoPath, curDir)
+
+    assert(res.length == 1)
+    assert(res.head == ".test" + File.separator + "test")
   }
 
 
