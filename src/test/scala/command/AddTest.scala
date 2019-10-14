@@ -113,4 +113,30 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
     assert(indexLines.isEmpty)
   }
 
+  it should "remove from the index a deleted file" in {
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
+
+    Add.add(repoPath, Seq(testFilePath))
+
+    new File(testFilePath).delete()
+    Add.add(repoPath, Seq(testFilePath))
+    val indexLines = IndexUtil.readIndexToList(repoPath)
+    assert(indexLines.isEmpty)
+  }
+
+  it should "remove from the index a deleted file (with some other file not deleted)" in {
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
+
+    Add.add(repoPath, Seq(testFilePath, testFilePath2))
+
+    new File(testFilePath).delete()
+    Add.add(repoPath, Seq(testFilePath))
+    val indexLines = IndexUtil.readIndexToList(repoPath)
+    assert(indexLines.length == 1)
+    assert(indexLines.head.split(" ")(1) != testFilePath)
+  }
+
 }

@@ -24,8 +24,14 @@ object Add {
     val allFilesListBrut = filesListCurDir ++ dirsListCurDir.flatMap(d => recursiveListFiles(d)).toList
     val pathsAllFilesList = allFilesListBrut.filter(_.isFile).filter(f => !f.getAbsolutePath.contains(".sgit")).map(_.getAbsolutePath)
 
+    val otherFiles = files.map(new File(_)).filterNot(_.exists()).map(_.getAbsolutePath)
+
+
     //Create Blob file and edit index file for each path
     pathsAllFilesList.foreach(p => addBlob(repoPath, p.replace(repoPath + File.separator, "")))
+
+    //remove the paths from the index if they was indexed
+    otherFiles.foreach(p => removeIfPathAlreadyIndexed(repoPath, p.replace(repoPath + File.separator, "")))
 
   }
 
@@ -73,7 +79,7 @@ object Add {
     val indexString = lines mkString "\n"
     if (indexString.contains(path)) {
       val indexPath = getIndexPath(repoPath).get
-      val linesList = lines.filter(l => !l.contains(path))
+      val linesList = lines.filterNot(l => l.split(" ")(1) == path)
       if (linesList.isEmpty)
         editFile(indexPath, "", append = false)
       else
