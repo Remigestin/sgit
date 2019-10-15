@@ -2,7 +2,7 @@ package parser
 
 import java.io.File
 
-import command.{Add, Commit, Repo, Status, Tag}
+import command.{Add, Branch, Commit, Repo, Status, Tag}
 import scopt.OParser
 import util.{CommitUtil, IndexUtil}
 import parser.ErrorMessage._
@@ -46,13 +46,23 @@ object Parser extends App {
         .text("list the status of the repo"),
       cmd("tag")
         .action((_, c) => c.copy(mode = "tag"))
-        .text("adds the files to the index")
+        .text("create tag for the current commit")
         .children(
           arg[String]("name")
             .required()
             .maxOccurs(1)
             .action((x, c) => c.copy(libName = x))
-            .text("create tag for the current commit")
+            .text("name of the tag")
+        ),
+      cmd("branch")
+        .action((_, c) => c.copy(mode = "branch"))
+        .text("create a branch")
+        .children(
+          arg[String]("branchName")
+            .required()
+            .maxOccurs(1)
+            .action((x, c) => c.copy(libName = x))
+            .text("name of the branch")
         ),
     )
   }
@@ -94,6 +104,16 @@ object Parser extends App {
               noCommit()
           else
             repoNotFound()
+
+        case "branch" =>
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+            if (CommitUtil.isThereACommit(Repo.getRepoPath(System.getProperty("user.dir")).get))
+              Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get)
+            else
+              noCommit()
+          else
+            repoNotFound()
+
         case _ =>
           println("error")
       }
