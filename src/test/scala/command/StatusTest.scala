@@ -152,7 +152,13 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     Add.add(repoPath,Seq(testFilePath, testFilePath2))
     Commit.commit(repoPath, "commit")
 
-    Status.getAllDeletionsNotCommitted(repoPath, curDir)
+    new File(testFilePath).delete()
+    Add.add(repoPath, Seq(testFilePath))
+
+    val res = Status.getAllDeletionsNotCommitted(repoPath, curDir)
+
+    assert(res.length == 1)
+    assert(res.head == ".test" + File.separator + "test")
 
   }
 

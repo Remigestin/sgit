@@ -16,10 +16,10 @@ object Status {
 
 
     val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + (getAllPathsUntracked(repoPath, curDir) mkString "\n")
-    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" + (getAllPathsTrackedModifiedNotAdd(repoPath, curDir).map("modified:   " + _) mkString "\n")
+    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" + (getAllPathsTrackedModifiedNotAdd(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotStaged(repoPath, curDir).map("deleted:   " + _) mkString "\n")
 
 
-    val toBeCommitted = "Changes to be committed:\n\n" + (getAllPathTrackedNeverCommitted(repoPath, curDir).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath, curDir).map("modified:   " + _) mkString "\n")
+    val toBeCommitted = "Changes to be committed:\n\n" + (getAllPathTrackedNeverCommitted(repoPath, curDir).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotCommitted(repoPath, curDir).map("deleted:   " + _) mkString "\n")
 
     toBeCommitted + "\n\n" + trackedModifiedNotAdd + "\n\n" + untracked
 
@@ -50,6 +50,7 @@ object Status {
     relativizeAListOfPath(repoPath, curDir, pathsUntracked)
   }
 
+  //TODO : recoder if i have le time
   def getAllPathsTrackedModifiedNotAdd(repoPath: String, curDir: String): List[String] = {
     val indexList = readIndexToList(repoPath)
     val indexMap = readIndexToMap(repoPath)
@@ -120,9 +121,14 @@ object Status {
 
     if (CommitUtil.isThereACommit(repoPath)) {
       val commit = CommitUtil.getLastCommitObject(repoPath)
-      val mapCommit = CommitUtil.getMapOfCommit(repoPath, commit)
-      println(mapCommit)
-      List()
+
+      val srcsCommit = CommitUtil.getMapOfCommit(repoPath, commit).keys.toList
+      val srcsIndex = readIndexToMap(repoPath).keys.toList
+
+      val listRep = srcsCommit diff srcsIndex
+
+      relativizeAListOfPath(repoPath, curDir, listRep)
+
     } else {
       List()
     }
