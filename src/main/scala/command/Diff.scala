@@ -97,7 +97,7 @@ object Diff {
       }
 
 
-      //if the element at the left is not equal the element at the right
+      //if the element at the left is not equal the element at the top
       else {
 
         //if the element at the top is greater than the element at the left, go up

@@ -2,7 +2,7 @@ package parser
 
 import java.io.File
 
-import command.{Add, Branch, Commit, Repo, Status, Tag}
+import command.{Add, Branch, Commit, Diff, Repo, Status, Tag}
 import scopt.OParser
 import util.{CommitUtil, IndexUtil}
 import parser.ErrorMessage._
@@ -64,6 +64,9 @@ object Parser extends App {
             .action((x, c) => c.copy(libName = x))
             .text("name of the branch")
         ),
+      cmd("diff")
+        .action((_, c) => c.copy(mode = "diff"))
+        .text("show the diff between the index and the working tree")
     )
   }
 
@@ -114,8 +117,16 @@ object Parser extends App {
           else
             repoNotFound()
 
+        case "diff" =>
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+            Diff.diff(Repo.getRepoPath(System.getProperty("user.dir")).get)
+          else
+            repoNotFound()
+
         case _ =>
           println("error")
+
+
       }
     case _ =>
     //arguments are bad
