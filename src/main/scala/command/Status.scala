@@ -116,6 +116,19 @@ object Status {
     relativizeAListOfPath(repoPath, curDir, list)
   }
 
+  def getAllDeletionsNotCommitted(repoPath: String, curDir: String): List[String] = {
+
+    if (CommitUtil.isThereACommit(repoPath)) {
+      val commit = CommitUtil.getLastCommitObject(repoPath)
+      val mapCommit = CommitUtil.getMapOfCommit(repoPath, commit)
+      println(mapCommit)
+      List()
+    } else {
+      List()
+    }
+
+  }
+
   def relativizeAListOfPath(repoPath: String, curDir: String, list: List[String]): List[String] = {
 
     list.map(s => Paths.get(curDir).relativize(Paths.get(repoPath + File.separator + s)).toString)

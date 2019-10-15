@@ -11,23 +11,23 @@ import scala.annotation.tailrec
 
 object CommitUtil {
 
+  def isThereACommit(repoPath: String): Boolean = {
+    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
+    new File(pathBranch).exists()
+  }
+
+  def getTreeFromCommit(repoPath: String, shaCommit: String): String = {
+    val commit = readSgitObjectToList(repoPath, shaCommit)
+    commit.head.split(" ")(1)
+  }
+
   def getLastCommitObject(repoPath: String): String = {
     val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
     readFileToList(pathBranch).head
   }
 
   def getLastCommitTree(repoPath: String): String = {
-
-    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
-    val commit = readFileToList(pathBranch).head
-
-    val tree = readFileToList(repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + commit).head.split(" ")(1)
-    tree
-  }
-
-  def isThereACommit(repoPath: String): Boolean = {
-    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
-    new File(pathBranch).exists()
+    getTreeFromCommit(repoPath, getLastCommitObject(repoPath))
   }
 
   @tailrec
@@ -65,6 +65,55 @@ object CommitUtil {
         getHashOfPathInTheCommit(repoPath, pathToFindDeeper, shaTreeToFind)
       }
     }
+  }
+
+  def getMapOfCommit(repoPath: String, shaCommit: String): Map[String, String] = {
+
+    def loop(listContentTree: List[String], pathParent: String, mapCommit: Map[String, String]): Map[String, String] = {
+
+      //if the tree is completely read, return the mapCommit
+      if (listContentTree.isEmpty) {
+        mapCommit
+      }
+
+      else {
+        val lineCurrent = listContentTree.head
+
+        //if a blob is inspected, it's added to the map then it calls the next line
+        if (lineCurrent.split(" ")(0) == "blob") {
+          val name = lineCurrent.split(" ")(2)
+          val sha = lineCurrent.split(" ")(1)
+          //if the file is in the racine, don't put a slash
+          if (pathParent == "") {
+            val mapCommitUpdated = mapCommit + (name -> sha)
+            loop(listContentTree.tail, pathParent, mapCommitUpdated)
+          } else {
+            val mapCommitUpdated = mapCommit + (pathParent + File.separator + name -> sha)
+            loop(listContentTree.tail, pathParent, mapCommitUpdated)
+          }
+        }
+
+        //if a tree is inspected, it first read the tree and update the map then it calls the next line
+        else {
+          val nameTree = lineCurrent.split(" ")(2)
+          val shaTree = lineCurrent.split(" ")(1)
+          val contentTree = readSgitObjectToList(repoPath, shaTree)
+          //if the file is in the racine, don't put a slash
+          if (pathParent == "") {
+            val mapCommitUpdated = loop(contentTree, nameTree, mapCommit)
+            loop(listContentTree.tail, pathParent, mapCommitUpdated)
+          } else {
+            val mapCommitUpdated = loop(contentTree, pathParent + File.separator + nameTree, mapCommit)
+            loop(listContentTree.tail, pathParent, mapCommitUpdated)
+          }
+        }
+      }
+    }
+
+    val shaTreeCommit = getTreeFromCommit(repoPath, shaCommit)
+    val treeLists = readSgitObjectToList(repoPath, shaTreeCommit)
+
+    loop(treeLists, "", Map())
   }
 
 

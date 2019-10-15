@@ -143,6 +143,19 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     assert(res.head == ".test" + File.separator + "test")
   }
 
+  it should "recover all files not in the index but in the last commit" in {
+
+    val curDir = System.getProperty("user.dir")
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 =  repoPath + File.separator + ".test" + File.separator + "test2"
+    Add.add(repoPath,Seq(testFilePath, testFilePath2))
+    Commit.commit(repoPath, "commit")
+
+    Status.getAllDeletionsNotCommitted(repoPath, curDir)
+
+  }
+
 
 
 }
