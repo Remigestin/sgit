@@ -57,8 +57,13 @@ object FileUtil {
 
 
   def readFileToList(path: String): List[String] = {
-    val source = scala.io.Source.fromFile(path)
-    try source.getLines.toList finally source.close()
+    if (new File(path).exists) {
+      val source = scala.io.Source.fromFile(path)
+      try source.getLines.toList finally source.close()
+    }
+    else {
+      List()
+    }
   }
 
 }
