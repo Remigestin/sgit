@@ -126,11 +126,13 @@ object CommitUtil {
 
       val resultUpdated = (shaCurrentCommit, content) :: result
 
-      if (contentCommitList(1).split(" ")(0) != "parent") {
+
+
+      if (contentCommitList(1).split(" ")(0) != "Parent") {
         resultUpdated
       }
       else {
-        val shaParent = contentCommitList(1).split(" ")(0)
+        val shaParent = contentCommitList(1).split(" ")(1)
         loop(resultUpdated, shaParent)
       }
     }

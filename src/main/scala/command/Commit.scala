@@ -89,8 +89,8 @@ object Commit {
 
       //---- STEP OF THE CREATION OF BLOB LINES
 
-      //filter only the blob (if it is in the index file)
-      val blobs = pathsCurrentSize.filter(f => mapIndex.contains(f))
+      //filter only the blob (the files)
+      val blobs = pathsCurrentSize.filter(f => new File(f).isFile)
 
       //recover the paths of the parents directory for each blob
       val pathsBlobParent = blobs.map(blob => blob.split(separatorSplit).slice(0, blob.split(separatorSplit).length - 1) mkString separator)
@@ -103,8 +103,8 @@ object Commit {
 
       //----  STEP OF THE CREATION OF TREE LINES
 
-      //filter only the directories (if it is in the index file)
-      val pathsDir = pathsCurrentSize.filter(f => !mapIndex.contains(f))
+      //filter only the directories
+      val pathsDir = pathsCurrentSize.filter(f => new File(f).isDirectory)
 
       //recover the paths of the parents directory for each directory
       val pathsDirParent = pathsDir.map(tree => tree.split(separatorSplit).slice(0, tree.split(separatorSplit).length - 1) mkString separator)
@@ -122,7 +122,7 @@ object Commit {
       val contentTreeList = pathsDir.map(d => mapParentPostTreesStep(d) mkString "\n")
 
       //sha1 and write the tree file
-      contentTreeList.foreach(content => editFile(repo + separator + ".sgit" + separator + "objects" + separator + sha1Hash(content), content, append = true))
+      contentTreeList.foreach(content => editFile(repo + separator + ".sgit" + separator + "objects" + separator + sha1Hash(content), content, append = false))
 
       //remove the elements created in this step, ie the element at the size param position in each array.
       val pathsSliced = pathsIndex.map(arr => removeLastMax(arr, depth))

@@ -18,8 +18,7 @@ object Branch {
       }
       return "branch " + name + " successfully created"
     }
-    "Failed to resolve 'Head' as a valid ref"
-
+    "Fatal: Not a valid object name: 'master'."
   }
 
   def branchAV(repoPath: String): Unit = {
