@@ -116,28 +116,7 @@ object CommitUtil {
     loop(treeLists, "", Map())
   }
 
-  def getAllCommits(repoPath: String, lastCommit: String): List[(String, String)] = {
 
-    @tailrec
-    def loop(result:List[(String, String)], shaCurrentCommit: String): List[(String, String)] = {
-
-      val contentCommitList = SgitObjectUtil.readSgitObjectToList(repoPath, shaCurrentCommit)
-      val content = contentCommitList mkString "\n"
-
-      val resultUpdated = (shaCurrentCommit, content) :: result
-
-
-
-      if (contentCommitList(1).split(" ")(0) != "Parent") {
-        resultUpdated
-      }
-      else {
-        val shaParent = contentCommitList(1).split(" ")(1)
-        loop(resultUpdated, shaParent)
-      }
-    }
-    loop(List(), lastCommit)
-  }
 
 
 

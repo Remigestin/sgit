@@ -3,7 +3,7 @@ package command
 import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.FileUtil
+import util.{BranchUtil, CommitUtil, FileUtil, SgitObjectUtil}
 
 import scala.reflect.io.Directory
 
@@ -29,16 +29,26 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     new Directory(new File(".test")).deleteRecursively()
   }
 
-  "The commande log" should "return the goot content" in {
+  "The command log" should "return the good content" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
-    val testFilePath =  repoPath + File.separator + ".test" + File.separator + "test"
-    val testFilePath2 =  repoPath + File.separator + ".test" + File.separator + "test2"
+    val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
-    Add.add(repoPath,Seq(testFilePath))
-    Commit.commit(repoPath, "message")
+    Add.add(repoPath, Seq(testFilePath))
+    Commit.commit(repoPath, "commit number 1")
+    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
+
     Add.add(repoPath, Seq(testFilePath2))
-    Commit.commit(repoPath, "commit numero 2")
-    println(Log.log(repoPath))
+    Commit.commit(repoPath, "commit number 2")
+    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val contentCommit2 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit2) mkString "\n"
+
+    val listToTest = List((shaCommit1, contentCommit1), (shaCommit2, contentCommit2))
+
+    val listRep = Log.getAllCommits(repoPath, shaCommit2)
+
+   assert(listToTest == listRep)
 
   }
 

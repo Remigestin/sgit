@@ -1,6 +1,6 @@
 package command
 
-import util.{BranchUtil, CommitUtil}
+import util.{BranchUtil, CommitUtil, SgitObjectUtil}
 
 import scala.annotation.tailrec
 
@@ -12,13 +12,13 @@ object Log {
     //read IO -> list of all the commits
     if (CommitUtil.isThereACommit(repoPath)) {
       val shaLastCommit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
-      val listAllCommits = CommitUtil.getAllCommits(repoPath, shaLastCommit)
+      val listAllCommits = getAllCommits(repoPath, shaLastCommit)
 
 
       //recover the result of a log
       getLogResult(repoPath, listAllCommits)
     } else {
-      ""
+      "there is no commit"
     }
   }
 
@@ -44,7 +44,7 @@ object Log {
           val stringCommit = "commit " + head._1 + "\n\n      " + messageCommit + "\n\n"
 
           //update the result of the sgit diff
-          val resultUpdated = result + stringCommit
+          val resultUpdated =  stringCommit + result
 
           //recursion
           loop(tail, resultUpdated)
@@ -52,6 +52,27 @@ object Log {
     }
 
     loop(listCommit, "")
+  }
+
+  def getAllCommits(repoPath: String, lastCommit: String): List[(String, String)] = {
+
+    @tailrec
+    def loop(result:List[(String, String)], shaCurrentCommit: String): List[(String, String)] = {
+
+      val contentCommitList = SgitObjectUtil.readSgitObjectToList(repoPath, shaCurrentCommit)
+      val content = contentCommitList mkString "\n"
+
+      val resultUpdated = (shaCurrentCommit, content) :: result
+
+      if (contentCommitList(1).split(" ")(0) != "Parent") {
+        resultUpdated
+      }
+      else {
+        val shaParent = contentCommitList(1).split(" ")(1)
+        loop(resultUpdated, shaParent)
+      }
+    }
+    loop(List(), lastCommit)
   }
 
 }
