@@ -11,7 +11,7 @@ object Diff {
   def diff(repoPath: String): String = {
 
     val mapIndex = IndexUtil.readIndexToMap(repoPath)
-    val listTripletIndex = mapIndex.toList.map(c => (repoPath + File.separator + c._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + c._2, repoPath + File.separator + c._1))
+    val listTripletIndex = mapIndex.toList.map(c => (repoPath + File.separator + c._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + c._2,  c._1))
 
 
     getDiffAllFiles(listTripletIndex, repoPath)
