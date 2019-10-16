@@ -2,7 +2,7 @@ package parser
 
 import java.io.File
 
-import command.{Add, Branch, Commit, Diff, Repo, Status, Tag}
+import command.{Add, Branch, Commit, Diff, Log, Repo, Status, Tag}
 import scopt.OParser
 import util.{CommitUtil, IndexUtil}
 import parser.ErrorMessage._
@@ -66,7 +66,10 @@ object Parser extends App {
         ),
       cmd("diff")
         .action((_, c) => c.copy(mode = "diff"))
-        .text("show the diff between the index and the working tree")
+        .text("show the diff between the index and the working tree"),
+      cmd("log")
+        .action((_, c) => c.copy(mode = "log"))
+        .text("show the log of the repo for the current branch")
     )
   }
 
@@ -119,7 +122,13 @@ object Parser extends App {
 
         case "diff" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            Diff.diff(Repo.getRepoPath(System.getProperty("user.dir")).get)
+            println(Diff.diff(Repo.getRepoPath(System.getProperty("user.dir")).get))
+          else
+            repoNotFound()
+
+        case "log" =>
+          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+            println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get))
           else
             repoNotFound()
 
