@@ -113,7 +113,7 @@ object CommitUtil {
     val shaTreeCommit = getTreeFromCommit(repoPath, shaCommit)
     val treeLists = readSgitObjectToList(repoPath, shaTreeCommit)
 
-    loop(treeLists, "", Map())
+    loop(treeLists, "", Map().withDefaultValue(""))
   }
 
 

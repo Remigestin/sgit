@@ -15,7 +15,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     new File(".test").mkdir()
     FileUtil.editFile(".test" + File.separator + "test", "Hello World", append = true)
-    FileUtil.editFile(".test" + File.separator + "test2", "hello, world", append = true)
+    FileUtil.editFile(".test" + File.separator + "test2", "deuxieme, fichier", append = true)
 
 
   }
@@ -39,6 +39,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
     val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
 
+
     Add.add(repoPath, Seq(testFilePath2))
     Commit.commit(repoPath, "commit number 2")
     val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
@@ -49,6 +50,35 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     val listRep = Log.getAllCommits(repoPath, shaCommit2)
 
    assert(listToTest == listRep)
+
+  }
+
+
+
+  it should "return the good content in option p" in {
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
+
+    Add.add(repoPath, Seq(testFilePath))
+    Commit.commit(repoPath, "commit number 1")
+    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
+    FileUtil.editFile(testFilePath,"aLIAAAAAAA", append = true)
+
+    Add.add(repoPath, Seq(testFilePath, testFilePath2))
+    Commit.commit(repoPath, "commit number 2")
+    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val contentCommit2 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit2) mkString "\n"
+
+    new File(testFilePath).delete()
+
+    Add.add(repoPath, Seq(testFilePath, testFilePath2))
+    Commit.commit(repoPath, "commit number 3")
+
+    val listToTest = List((shaCommit1, contentCommit1), (shaCommit2, contentCommit2))
+
+   println(Log.logOptionP(repoPath))
 
   }
 
