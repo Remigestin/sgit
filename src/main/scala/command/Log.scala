@@ -96,7 +96,7 @@ object Log {
             val mapCommitParent = CommitUtil.getMapOfCommit(repoPath, shaCommitParent)
 
             val listTuplesToCompare = getListTuples(mapCommitCurrent,mapCommitParent)
-              .map(tuple => (repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._1,repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._2 ))
+              .map(tuple => (repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._1,repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._2, tuple._3 ))
 
 
             val stringAllDiff = Diff.getDiffAllFiles(listTuplesToCompare, repoPath)
@@ -117,7 +117,7 @@ object Log {
             val mapEmpty = Map(("","")).withDefaultValue("")
 
             val listTuplesToCompare = getListTuples(mapCommitCurrent,mapEmpty)
-              .map(tuple => (repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._1,repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._2 ))
+              .map(tuple => (repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._1,repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._2 , tuple._3))
 
             val stringAllDiff = Diff.getDiffAllFiles(listTuplesToCompare, repoPath)
 
@@ -159,14 +159,14 @@ object Log {
     loop(List(), lastCommit)
   }
 
-  def getListTuples(mapNew: Map[String,String], mapOld: Map[String, String]) : List[(String, String)] = {
+  def getListTuples(mapNew: Map[String,String], mapOld: Map[String, String]) : List[(String, String, String)] = {
 
     @tailrec
-    def loop(listCurrent: List[(String, String)], mapNewCurrent: Map[String, String]) : List[(String, String)] = {
+    def loop(listCurrent: List[(String, String, String)], mapNewCurrent: Map[String, String]) : List[(String, String, String)] = {
      if (mapNewCurrent.isEmpty) {
 
        val deletedFiles = mapOld.keys.toList diff mapNew.keys.toList
-       val deletedTuples = deletedFiles.map(src => ("", mapOld(src)))
+       val deletedTuples = deletedFiles.map(src => ("", mapOld(src), src))
        listCurrent ++ deletedTuples
 
      } else {
@@ -175,7 +175,7 @@ object Log {
        val newBlob = tuple._2
        val oldBlob = mapOld(tuple._1)
 
-       val listUpdated = (newBlob, oldBlob) :: listCurrent
+       val listUpdated = (newBlob, oldBlob, tuple._1) :: listCurrent
        loop(listUpdated, mapNewCurrent.tail)
      }
     }

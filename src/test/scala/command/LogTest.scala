@@ -76,7 +76,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     Add.add(repoPath, Seq(testFilePath, testFilePath2))
     Commit.commit(repoPath, "commit number 3")
 
-    val listToTest = List((shaCommit1, contentCommit1), (shaCommit2, contentCommit2))
+
 
    println(Log.logOptionP(repoPath))
 

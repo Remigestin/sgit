@@ -11,10 +11,10 @@ object Diff {
   def diff(repoPath: String): String = {
 
     val mapIndex = IndexUtil.readIndexToMap(repoPath)
-    val listCouplesIndex = mapIndex.toList.map(c => (repoPath + File.separator + c._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + c._2))
+    val listTripletIndex = mapIndex.toList.map(c => (repoPath + File.separator + c._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + c._2, repoPath + File.separator + c._1))
 
 
-    getDiffAllFiles(listCouplesIndex, repoPath)
+    getDiffAllFiles(listTripletIndex, repoPath)
   }
 
 
@@ -138,10 +138,16 @@ object Diff {
     loop("", listDiff)
   }
 
-  def getDiffAllFiles(pathsToDiff: List[(String, String)], repoPath: String): String = {
+  /**
+   *
+   * @param pathsToDiff : Paths to diffs (newfile, oldfile, namefile)
+   * @param repoPath : repo of the path
+   * @return the string of all the diffs for all the paths in paths to diffs
+   */
+  def getDiffAllFiles(pathsToDiff: List[(String, String, String)], repoPath: String): String = {
 
     @tailrec
-    def loop(pathsToDiffCurrent: List[(String, String)], result: String): String = {
+    def loop(pathsToDiffCurrent: List[(String, String, String)], result: String): String = {
 
       pathsToDiffCurrent match {
         case Nil => result
@@ -154,7 +160,7 @@ object Diff {
           val listDif = getDiffList(matrix, newFile.length, oldFile.length)
 
           if (listDif.nonEmpty) {
-            val newResult = result + head._1.replace(repoPath + File.separator, "") + " :\n" + getDiffStringOneFile(listDif, newFile, oldFile) + "\n\n"
+            val newResult = result + head._3.replace(repoPath + File.separator, "") + " :\n" + getDiffStringOneFile(listDif, newFile, oldFile) + "\n\n"
             loop(tail, newResult)
           } else {
             loop(tail, result + "\n\n")
