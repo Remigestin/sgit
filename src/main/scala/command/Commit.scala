@@ -36,7 +36,7 @@ object Commit {
 
     //check if it is the first commit or not and create the commit object
     if (new File(pathBranch).exists()) {
-      if (shaTreeCommit == CommitUtil.getLastCommitTree(repoPath)) {
+      if (shaTreeCommit == CommitUtil.getLastCommitTree(repoPath, BranchUtil.getCurrentBranchName(repoPath))) {
         return "On branch " + BranchUtil.getCurrentBranchName(repoPath)  + "\nNothing to commit, working tree clean"
       }
       val commitParent = readFileToList(pathBranch).head

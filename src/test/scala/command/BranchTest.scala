@@ -3,7 +3,7 @@ package command
 import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.{CommitUtil, FileUtil}
+import util.{BranchUtil, CommitUtil, FileUtil}
 
 import scala.reflect.io.Directory
 
@@ -41,7 +41,7 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
     assert(new File(pathBranch).exists())
 
     val content = FileUtil.readFileToList(pathBranch).head
-    val shaCommit = CommitUtil.getLastCommitObject(repoPath)
+    val shaCommit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
     assert(shaCommit == content)
   }
 

@@ -21,13 +21,13 @@ object CommitUtil {
     commit.head.split(" ")(1)
   }
 
-  def getLastCommitObject(repoPath: String): String = {
-    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
+  def getLastCommitObject(repoPath: String, branchName: String): String = {
+    val pathBranch = repoPath + File.separator + ".sgit" + File.separator + "branches" + File.separator + branchName
     readFileToList(pathBranch).head
   }
 
-  def getLastCommitTree(repoPath: String): String = {
-    getTreeFromCommit(repoPath, getLastCommitObject(repoPath))
+  def getLastCommitTree(repoPath: String, branchName: String): String = {
+    getTreeFromCommit(repoPath, getLastCommitObject(repoPath, branchName))
   }
 
   @tailrec
@@ -115,6 +115,28 @@ object CommitUtil {
 
     loop(treeLists, "", Map())
   }
+
+  def getAllCommits(repoPath: String, lastCommit: String): List[(String, String)] = {
+
+    @tailrec
+    def loop(result:List[(String, String)], shaCurrentCommit: String): List[(String, String)] = {
+
+      val contentCommitList = SgitObjectUtil.readSgitObjectToList(repoPath, shaCurrentCommit)
+      val content = contentCommitList mkString "\n"
+
+      val resultUpdated = (shaCurrentCommit, content) :: result
+
+      if (contentCommitList(1).split(" ")(0) != "parent") {
+        resultUpdated
+      }
+      else {
+        val shaParent = contentCommitList(1).split(" ")(0)
+        loop(resultUpdated, shaParent)
+      }
+    }
+    loop(List(), lastCommit)
+  }
+
 
 
 }

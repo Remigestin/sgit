@@ -4,7 +4,7 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-import util.{CommitUtil, FileUtil, IndexUtil}
+import util.{BranchUtil, CommitUtil, FileUtil, IndexUtil}
 import util.FileUtil.recursiveListFiles
 import util.IndexUtil._
 
@@ -77,7 +77,7 @@ object Status {
     val srcIndex = indexList.map(_.split(" ")(1))
 
     if (CommitUtil.isThereACommit(repoPath)) {
-      val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
+      val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath, BranchUtil.getCurrentBranchName(repoPath))
       val paths = srcIndex.filterNot(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).isDefined)
       relativizeAListOfPath(repoPath, curDir, paths)
     } else {
@@ -96,7 +96,7 @@ object Status {
 
     if (CommitUtil.isThereACommit(repoPath)) {
 
-      val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath)
+      val lastTreeCommit = CommitUtil.getLastCommitTree(repoPath, BranchUtil.getCurrentBranchName(repoPath))
 
       val listHashCommit = srcIndex.map(CommitUtil.getHashOfPathInTheCommit(repoPath, _, lastTreeCommit).getOrElse("not in commit"))
 
@@ -120,7 +120,7 @@ object Status {
   def getAllDeletionsNotCommitted(repoPath: String, curDir: String): List[String] = {
 
     if (CommitUtil.isThereACommit(repoPath)) {
-      val commit = CommitUtil.getLastCommitObject(repoPath)
+      val commit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
 
       val srcsCommit = CommitUtil.getMapOfCommit(repoPath, commit).keys.toList
       val srcsIndex = readIndexToMap(repoPath).keys.toList
