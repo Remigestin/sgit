@@ -154,7 +154,7 @@ object Diff {
           val listDif = getDiffList(matrix, newFile.length, oldFile.length)
 
           if (listDif.nonEmpty) {
-            val newResult = result + head._1 + " :\n" + getDiffStringOneFile(listDif, newFile, oldFile) + "\n\n"
+            val newResult = result + head._1.replace(repoPath + File.separator, "") + " :\n" + getDiffStringOneFile(listDif, newFile, oldFile) + "\n\n"
             loop(tail, newResult)
           } else {
             loop(tail, result + "\n\n")

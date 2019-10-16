@@ -111,7 +111,7 @@ object Parser extends App {
         case "branch" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             if (CommitUtil.isThereACommit(Repo.getRepoPath(System.getProperty("user.dir")).get))
-              Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get)
+              Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get, "test")
             else
               noCommit()
           else

@@ -56,7 +56,7 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
     assert(!new File(pathTag).exists())
   }
 
-  it should "not update a tag if it is already exist" in {
+  it should "not create a tag if it is already exist" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     val nameTag = "name"
     val pathTag = repoPath + File.separator + ".sgit" + File.separator + "tags" + File.separator + nameTag
@@ -72,9 +72,4 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
 
     assert(contentTag1 == contentTag2)
   }
-
-
-
-
-
 }

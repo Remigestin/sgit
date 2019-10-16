@@ -26,6 +26,7 @@ class DiffTest extends FlatSpec with BeforeAndAfterEach {
     new Directory(new File(".test")).deleteRecursively()
   }
 
+  //TODO : the diff test
   "The diff command" should "return the good diffs" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
 
@@ -36,8 +37,6 @@ class DiffTest extends FlatSpec with BeforeAndAfterEach {
 
     FileUtil.editFile(testFilePath, "\nET AUSSI ALIAAAAA CA CEST UNE DIFF",append = true)
     FileUtil.editFile(testFilePath2, "j ai remis a 0 ton fichier!", append = false)
-
-    println(Diff.diff(repoPath))
   }
 
 }
