@@ -126,10 +126,10 @@ object Diff {
 
         case head :: tail =>
           if (head._1 == "+") {
-            val newResult = result + "l." + head._2 + " ++ " + newFile(head._2 - 1) + "\n"
+            val newResult = result + Console.GREEN + "l." + head._2 + " ++ " + newFile(head._2 - 1) + "\n" + Console.RESET
             loop(newResult, tail)
           } else {
-            val newResult = result + "l." + head._2 + " -- " + oldFile(head._2 - 1) + "\n"
+            val newResult = result + Console.RED + "l." + head._2 + " -- " + oldFile(head._2 - 1) + "\n" + Console.RESET
             loop(newResult, tail)
           }
       }
@@ -163,7 +163,7 @@ object Diff {
             val newResult = result + head._3.replace(repoPath + File.separator, "") + " :\n" + getDiffStringOneFile(listDif, newFile, oldFile) + "\n\n"
             loop(tail, newResult)
           } else {
-            loop(tail, result + "\n\n")
+            loop(tail, result)
           }
       }
     }

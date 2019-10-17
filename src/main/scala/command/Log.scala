@@ -61,7 +61,7 @@ object Log {
           val messageCommit = head._2.split("\n\n")(1)
 
           //create the string for a commit
-          val stringCommit = "commit " + head._1 + "\n\n      " + messageCommit + "\n\n"
+          val stringCommit = Console.YELLOW + "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\n"
 
           //update the result of the sgit diff
           val resultUpdated =  stringCommit + result
@@ -103,7 +103,7 @@ object Log {
 
 
             //create the string for a commit
-            val stringCommit = "commit " + head._1 + "\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n\n"
+            val stringCommit = Console.YELLOW +  "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n\n"
 
             //update the result of the sgit diff
             val resultUpdated =  stringCommit + result
@@ -122,7 +122,7 @@ object Log {
             val stringAllDiff = Diff.getDiffAllFiles(listTuplesToCompare, repoPath)
 
             //create the string for a commit
-            val stringCommit = "commit " + head._1 + "\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n\n"
+            val stringCommit = Console.YELLOW +  "commit " + head._1 + Console.RESET +"\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n"
 
             //update the result of the sgit diff
             val resultUpdated =  stringCommit + result

@@ -70,6 +70,11 @@ object Parser extends App {
       cmd("log")
         .action((_, c) => c.copy(mode = "log"))
         .text("show the log of the repo for the current branch")
+        .children(
+          opt[Unit]('p', name = "patch")
+            .action((x, c) => c.copy(patch = true))
+            .text("show changes overtime")
+        ),
     )
   }
 
@@ -128,7 +133,11 @@ object Parser extends App {
 
         case "log" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get))
+            if(!config.patch) {
+              println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get))
+            } else {
+              println(Log.logOptionP(Repo.getRepoPath(System.getProperty("user.dir")).get))
+            }
           else
             repoNotFound()
 

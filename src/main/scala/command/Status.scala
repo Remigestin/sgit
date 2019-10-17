@@ -15,11 +15,11 @@ object Status {
     val repoPath = Repo.getRepoPath(curDir).get
 
 
-    val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" + (getAllPathsUntracked(repoPath, curDir) mkString "\n")
-    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" + (getAllPathsTrackedModifiedNotAdd(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotStaged(repoPath, curDir).map("deleted:   " + _) mkString "\n")
+    val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" +  Console.RED + (getAllPathsUntracked(repoPath, curDir) mkString "\n") + Console.RESET
+    val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" +  Console.RED + (getAllPathsTrackedModifiedNotAdd(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotStaged(repoPath, curDir).map("deleted:   " + _) mkString "\n") + Console.RESET
 
 
-    val toBeCommitted = "Changes to be committed:\n\n" + (getAllPathTrackedNeverCommitted(repoPath, curDir).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotCommitted(repoPath, curDir).map("deleted:   " + _) mkString "\n")
+    val toBeCommitted = "Changes to be committed:\n\n" + Console.GREEN + (getAllPathTrackedNeverCommitted(repoPath, curDir).map("new file:   " + _) mkString "\n") + "\n" + (getAllPathTrackedAndCommittedModified(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotCommitted(repoPath, curDir).map("deleted:   " + _) mkString "\n") + Console.RESET
 
     toBeCommitted + "\n\n" + trackedModifiedNotAdd + "\n\n" + untracked
 
@@ -50,7 +50,7 @@ object Status {
     relativizeAListOfPath(repoPath, curDir, pathsUntracked)
   }
 
-  //TODO : recoder if i have le time
+  //TODO : recoder if i have le time (deleted instead of modified at the same time in a sub dir)
   def getAllPathsTrackedModifiedNotAdd(repoPath: String, curDir: String): List[String] = {
     val indexList = readIndexToList(repoPath)
     val indexMap = readIndexToMap(repoPath)

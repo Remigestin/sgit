@@ -14,4 +14,4 @@ parallelExecution in Test := false
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultUniversalScript(shebang = false)))
 
-assemblyJarName in assembly := s"sgit.bat"
+assemblyJarName in assembly := s"sgit"
