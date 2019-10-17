@@ -136,7 +136,7 @@ object Parser extends App {
             if(!config.patch) {
               println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get))
             } else {
-              println(Log.logOptionP(Repo.getRepoPath(System.getProperty("user.dir")).get))
+              println(Log.logOption(Repo.getRepoPath(System.getProperty("user.dir")).get, "patch"))
             }
           else
             repoNotFound()

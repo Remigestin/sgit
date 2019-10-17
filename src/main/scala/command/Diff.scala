@@ -172,5 +172,47 @@ object Diff {
 
   }
 
+  def getDiffStatAllFiles(pathsToDiff: List[(String, String, String)], repoPath: String): String = {
+
+    @tailrec
+    def loop(pathsToDiffCurrent: List[(String, String, String)], result: String, sumFiles:Int, sumAddition: Int, sumDeletion: Int): String = {
+
+      pathsToDiffCurrent match {
+        case Nil => result + sumFiles + " files changed, " + sumAddition + " insertions(+), " + sumDeletion + " deletions(-)\n"
+        case head :: tail =>
+
+          val newFile = FileUtil.readFileToList(head._1)
+          val oldFile = FileUtil.readFileToList(head._2)
+
+          val matrix = constructMatrix(newFile, oldFile)
+          val listDif = getDiffList(matrix, newFile.length, oldFile.length)
+
+          if (listDif.nonEmpty) {
+            val nbAddition = listDif.count(_._1 == "+")
+            val sumAdditionUpdated = sumAddition + nbAddition
+
+            val nbDeletion = listDif.count(_._1 == "-")
+            val sumDeletionUpdated = sumDeletion + nbDeletion
+
+            val sumFilesUpdated = sumFiles + 1
+
+            val sumAdditionDeletion = nbAddition + nbDeletion
+
+            val resultUpdated = result + head._3.replace(repoPath + File.separator, "") + " | " + sumAdditionDeletion + " (" + Console.GREEN + nbAddition + "++" + Console.RESET + " " + Console.RED + nbDeletion + "--" + Console.RESET + ")" + "\n"
+            loop(tail, resultUpdated, sumFilesUpdated, sumAdditionUpdated, sumDeletionUpdated)
+
+          }
+          else {
+            loop(tail, result, sumFiles, sumAddition, sumDeletion)
+          }
+      }
+    }
+
+
+    loop(pathsToDiff, "", 0,0,0)
+  }
+
+
+
 
 }

@@ -26,7 +26,8 @@ object Log {
     }
   }
 
-  def logOptionP(repoPath:String): String = {
+  def logOption(repoPath: String, option: String): String = {
+
 
     //read IO -> list of all the commits
     if (CommitUtil.isThereACommit(repoPath)) {
@@ -34,13 +35,19 @@ object Log {
       val shaLastCommit = CommitUtil.getLastCommitObject(repoPath, branchName)
       val listAllCommits = getAllCommits(repoPath, shaLastCommit)
 
+      if (option == "patch") {
+        "branch " + branchName + "\n\n" + getLogOption(repoPath, listAllCommits, Diff.getDiffAllFiles)
+      } else {
+        "branch " + branchName + "\n\n" + getLogOption(repoPath, listAllCommits, Diff.getDiffStatAllFiles)
+      }
 
       //recover the result of a log
-      "branch " + branchName + "\n\n" + getLogOptionP(repoPath, listAllCommits)
+
     } else {
       "there is no commit"
     }
   }
+
 
   /**
    *
@@ -64,7 +71,7 @@ object Log {
           val stringCommit = Console.YELLOW + "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\n"
 
           //update the result of the sgit diff
-          val resultUpdated =  stringCommit + result
+          val resultUpdated = stringCommit + result
 
           //recursion
           loop(tail, resultUpdated)
@@ -74,7 +81,7 @@ object Log {
     loop(listCommit, "")
   }
 
-  def getLogOptionP(repoPath: String, listCommit: List[(String, String)]): String = {
+  def getLogOption(repoPath: String, listCommit: List[(String, String)], option: ( List[(String, String, String)], String) => String): String = {
 
     @tailrec
     def loop(listCurrent: List[(String, String)], result: String): String = {
@@ -86,7 +93,7 @@ object Log {
           //recover the message of the commit
           val messageCommit = head._2.split("\n\n")(1)
 
-          val mapCommitCurrent = CommitUtil.getMapOfCommit(repoPath,head._1)
+          val mapCommitCurrent = CommitUtil.getMapOfCommit(repoPath, head._1)
 
           val contentCommitList = head._2.split("\n")
 
@@ -95,37 +102,37 @@ object Log {
 
             val mapCommitParent = CommitUtil.getMapOfCommit(repoPath, shaCommitParent)
 
-            val listTuplesToCompare = getListTuples(mapCommitCurrent,mapCommitParent)
-              .map(tuple => (repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._1,repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._2, tuple._3 ))
+            val listTuplesToCompare = getListTuples(mapCommitCurrent, mapCommitParent)
+              .map(tuple => (repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._2, tuple._3))
 
 
-            val stringAllDiff = Diff.getDiffAllFiles(listTuplesToCompare, repoPath)
-
+            val stringAllDiff = option(listTuplesToCompare, repoPath)
 
             //create the string for a commit
-            val stringCommit = Console.YELLOW +  "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n\n"
+            val stringCommit = Console.YELLOW + "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n\n"
 
             //update the result of the sgit diff
-            val resultUpdated =  stringCommit + result
+            val resultUpdated = stringCommit + result
 
             loop(tail, resultUpdated)
+
           }
 
           else {
 
 
-            val mapEmpty = Map(("","")).withDefaultValue("")
+            val mapEmpty = Map(("", "")).withDefaultValue("")
 
-            val listTuplesToCompare = getListTuples(mapCommitCurrent,mapEmpty)
-              .map(tuple => (repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._1,repoPath +File.separator + ".sgit" + File.separator +"objects" + File.separator + tuple._2 , tuple._3))
+            val listTuplesToCompare = getListTuples(mapCommitCurrent, mapEmpty)
+              .map(tuple => (repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._2, tuple._3))
 
-            val stringAllDiff = Diff.getDiffAllFiles(listTuplesToCompare, repoPath)
+            val stringAllDiff = option(listTuplesToCompare, repoPath)
 
             //create the string for a commit
-            val stringCommit = Console.YELLOW +  "commit " + head._1 + Console.RESET +"\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n"
+            val stringCommit = Console.YELLOW + "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\nDiffs : " + "\n" + stringAllDiff + "\n"
 
             //update the result of the sgit diff
-            val resultUpdated =  stringCommit + result
+            val resultUpdated = stringCommit + result
 
             //recursion
             loop(tail, resultUpdated)
@@ -141,7 +148,7 @@ object Log {
   def getAllCommits(repoPath: String, lastCommit: String): List[(String, String)] = {
 
     @tailrec
-    def loop(result:List[(String, String)], shaCurrentCommit: String): List[(String, String)] = {
+    def loop(result: List[(String, String)], shaCurrentCommit: String): List[(String, String)] = {
 
       val contentCommitList = SgitObjectUtil.readSgitObjectToList(repoPath, shaCurrentCommit)
       val content = contentCommitList mkString "\n"
@@ -156,29 +163,31 @@ object Log {
         loop(resultUpdated, shaParent)
       }
     }
+
     loop(List(), lastCommit)
   }
 
-  def getListTuples(mapNew: Map[String,String], mapOld: Map[String, String]) : List[(String, String, String)] = {
+  def getListTuples(mapNew: Map[String, String], mapOld: Map[String, String]): List[(String, String, String)] = {
 
     @tailrec
-    def loop(listCurrent: List[(String, String, String)], mapNewCurrent: Map[String, String]) : List[(String, String, String)] = {
-     if (mapNewCurrent.isEmpty) {
+    def loop(listCurrent: List[(String, String, String)], mapNewCurrent: Map[String, String]): List[(String, String, String)] = {
+      if (mapNewCurrent.isEmpty) {
 
-       val deletedFiles = mapOld.keys.toList diff mapNew.keys.toList
-       val deletedTuples = deletedFiles.map(src => ("", mapOld(src), src))
-       listCurrent ++ deletedTuples
+        val deletedFiles = mapOld.keys.toList diff mapNew.keys.toList
+        val deletedTuples = deletedFiles.map(src => ("", mapOld(src), src))
+        listCurrent ++ deletedTuples
 
-     } else {
+      } else {
 
-       val tuple = mapNewCurrent.head
-       val newBlob = tuple._2
-       val oldBlob = mapOld(tuple._1)
+        val tuple = mapNewCurrent.head
+        val newBlob = tuple._2
+        val oldBlob = mapOld(tuple._1)
 
-       val listUpdated = (newBlob, oldBlob, tuple._1) :: listCurrent
-       loop(listUpdated, mapNewCurrent.tail)
-     }
+        val listUpdated = (newBlob, oldBlob, tuple._1) :: listCurrent
+        loop(listUpdated, mapNewCurrent.tail)
+      }
     }
+
     loop(List(), mapNew)
   }
 
