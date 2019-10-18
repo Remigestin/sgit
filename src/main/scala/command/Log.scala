@@ -89,7 +89,7 @@ object Log {
    * @param option     : function of diff to apply to the commits
    * @return the string to print in the terminal of the diff of the listCommit for the option asked.
    */
-  def getLogOption(repoPath: String, listCommit: List[(String, String)], option: (List[(String, String, String)], String) => String): String = {
+  def getLogOption(repoPath: String, listCommit: List[(String, String)], option: (List[FilesToDiff], String) => String): String = {
 
     @tailrec
     def loop(listCurrent: List[(String, String)], result: String): String = {
@@ -111,7 +111,7 @@ object Log {
             val mapCommitParent = CommitUtil.getMapOfCommit(repoPath, shaCommitParent)
 
             val listTuplesToCompare = getListTuples(mapCommitCurrent, mapCommitParent)
-              .map(tuple => (getPathSgitObject(repoPath, tuple._1), getPathSgitObject(repoPath, tuple._2), tuple._3))
+              .map(tuple => new FilesToDiff(readSgitObjectToList(repoPath, tuple._1),  readSgitObjectToList(repoPath, tuple._2), tuple._3))
 
 
             val stringAllDiff = option(listTuplesToCompare, repoPath)
@@ -132,7 +132,7 @@ object Log {
             val mapEmpty = Map(("", "")).withDefaultValue("")
 
             val listTuplesToCompare = getListTuples(mapCommitCurrent, mapEmpty)
-              .map(tuple => (getPathSgitObject(repoPath, tuple._1), getPathSgitObject(repoPath, tuple._2), tuple._3))
+              .map(tuple => new FilesToDiff(readSgitObjectToList(repoPath, tuple._1),  readSgitObjectToList(repoPath, tuple._2), tuple._3))
 
             val stringAllDiff = option(listTuplesToCompare, repoPath)
 

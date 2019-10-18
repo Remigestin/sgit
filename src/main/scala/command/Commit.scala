@@ -55,7 +55,7 @@ object Commit {
   }
 
   /**
-   * @param mapIndex : map of the index file
+   * @param mapIndex : the content of the index in a map : (src -> blob)
    * @param repoPath : path of the sgit repo
    * @return map with all the contents of each trees (pure func)
    */

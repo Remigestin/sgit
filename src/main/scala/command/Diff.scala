@@ -6,18 +6,60 @@ import util.{FileUtil, IndexUtil, SgitObjectUtil}
 
 import scala.annotation.tailrec
 
+class FilesToDiff(val contentNewFile: List[String], val contentOldFile: List[String], val nameFileToPrint: String)
+
 object Diff {
 
   def diff(repoPath: String): String = {
 
-    val mapIndex = IndexUtil.readIndexToMap(repoPath)
-    val listTripletIndex = mapIndex.toList.map(c => (repoPath + File.separator + c._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + c._2,  c._1))
+    //--------------- IO READING STEP
+    val listIndex = IndexUtil.readIndexToMap(repoPath).toList
+    val listFilesToDiff = getListFilesToDiff(repoPath, listIndex)
 
 
-    getDiffAllFiles(listTripletIndex, repoPath)
+    //--------------------- PURE FUNCTIONAL STEP
+
+    getDiffAllFiles(listFilesToDiff, repoPath)
+  }
+
+  /**
+   *
+   * @param repoPath  : the path of the sgit repo
+   * @param listIndex : the index in the form List[(src, blob)]
+   * @return the list of all the FilesToDiff wanted (IO Read)
+   */
+  def getListFilesToDiff(repoPath: String, listIndex: List[(String, String)]): List[FilesToDiff] = {
+
+    @tailrec
+    def loop(listResult: List[FilesToDiff], listIndexCurrent: List[(String, String)]): List[FilesToDiff] = {
+
+      listIndexCurrent match {
+
+        case Nil => listResult
+        case head :: tail =>
+
+          val contentNewFile = FileUtil.readFileToList(repoPath + File.separator + head._1)
+          val contentOldFile = SgitObjectUtil.readSgitObjectToList(repoPath, head._2)
+          val nameFileToPrint = head._1
+
+          val fileToDiff = new FilesToDiff(contentNewFile, contentOldFile, nameFileToPrint)
+
+          val listResultUpdated = fileToDiff :: listResult
+
+          loop(listResultUpdated, tail)
+      }
+    }
+
+    loop(List(), listIndex)
   }
 
 
+  /**
+   *
+   * @param newFile : content of the new file to diff
+   * @param oldFile : content of the old file to diff
+   * @return the matrix for the LCS Algorithm in order to have the longest common subsequence
+   */
   def constructMatrix(newFile: List[String], oldFile: List[String]): Map[(Int, Int), Int] = {
 
     @tailrec
@@ -60,14 +102,21 @@ object Diff {
     loop(Map(), 0, 0)
   }
 
+  /**
+   *
+   * @param mapMatrix   : the matrix of the LCS algorithm
+   * @param sizeNewFile : nb line of the new file to diff (height of the matrix)
+   * @param sizeOldFile : nb line of the old file to diff (width of the matrix)
+   * @return the list of all the differences between the two files (+/-, numLine)
+   */
   def getDiffList(mapMatrix: Map[(Int, Int), Int], sizeNewFile: Int, sizeOldFile: Int): List[(String, Int)] = {
 
     @tailrec
     def loop(newLine: Int, oldLine: Int, listRep: List[(String, Int)]): List[(String, Int)] = {
 
-      //if all the matrix is read, return the listRep
+      //if all the matrix is read, return the listRep sort by the numline
       if (newLine == 0 && oldLine == 0) {
-        listRep
+        listRep.sortBy(_._2)
       }
 
       //if  the cursor is at the top of the matrix, go left
@@ -116,6 +165,13 @@ object Diff {
     loop(sizeNewFile, sizeOldFile, List())
   }
 
+  /**
+   *
+   * @param listDiff : list of all the differences for one diff (+/-, numLine)
+   * @param newFile  : content of the new file
+   * @param oldFile  : content of the old file
+   * @return the string to print for the difference of one file
+   */
   def getDiffStringOneFile(listDiff: List[(String, Int)], newFile: List[String], oldFile: List[String]): String = {
 
     @tailrec
@@ -140,27 +196,24 @@ object Diff {
 
   /**
    *
-   * @param pathsToDiff : Paths to diffs (newfile, oldfile, namefile)
-   * @param repoPath : repo of the path
-   * @return the string of all the diffs for all the paths in paths to diffs
+   * @param filesToDiff : list of all the diff to effectuate
+   * @param repoPath    : path of the sgit repo
+   * @return the string of all the diffs for all the filesToDiff
    */
-  def getDiffAllFiles(pathsToDiff: List[(String, String, String)], repoPath: String): String = {
+  def getDiffAllFiles(filesToDiff: List[FilesToDiff], repoPath: String): String = {
 
     @tailrec
-    def loop(pathsToDiffCurrent: List[(String, String, String)], result: String): String = {
+    def loop(filesToDiffCurrent: List[FilesToDiff], result: String): String = {
 
-      pathsToDiffCurrent match {
+      filesToDiffCurrent match {
         case Nil => result
         case head :: tail =>
 
-          val newFile = FileUtil.readFileToList(head._1)
-          val oldFile = FileUtil.readFileToList(head._2)
-
-          val matrix = constructMatrix(newFile, oldFile)
-          val listDif = getDiffList(matrix, newFile.length, oldFile.length)
+          val matrix = constructMatrix(head.contentNewFile, head.contentOldFile)
+          val listDif = getDiffList(matrix, head.contentNewFile.length, head.contentOldFile.length)
 
           if (listDif.nonEmpty) {
-            val newResult = result + head._3.replace(repoPath + File.separator, "") + " :\n" + getDiffStringOneFile(listDif, newFile, oldFile) + "\n\n"
+            val newResult = result + head.nameFileToPrint.replace(repoPath + File.separator, "") + " :\n" + getDiffStringOneFile(listDif, head.contentNewFile, head.contentOldFile) + "\n\n"
             loop(tail, newResult)
           } else {
             loop(tail, result)
@@ -168,24 +221,27 @@ object Diff {
       }
     }
 
-    loop(pathsToDiff, "")
+    loop(filesToDiff, "")
 
   }
 
-  def getDiffStatAllFiles(pathsToDiff: List[(String, String, String)], repoPath: String): String = {
+  /**
+   *
+   * @param filesToDif : Paths to diffs
+   * @param repoPath   : the path of the sgit repo
+   * @return the string of all the diffs for all the filesToDiff
+   */
+  def getDiffStatAllFiles(filesToDif: List[FilesToDiff], repoPath: String): String = {
 
     @tailrec
-    def loop(pathsToDiffCurrent: List[(String, String, String)], result: String, sumFiles:Int, sumAddition: Int, sumDeletion: Int): String = {
+    def loop(filesToDifCurrent: List[FilesToDiff], result: String, sumFiles: Int, sumAddition: Int, sumDeletion: Int): String = {
 
-      pathsToDiffCurrent match {
+      filesToDifCurrent match {
         case Nil => result + sumFiles + " files changed, " + sumAddition + " insertions(+), " + sumDeletion + " deletions(-)\n"
         case head :: tail =>
 
-          val newFile = FileUtil.readFileToList(head._1)
-          val oldFile = FileUtil.readFileToList(head._2)
-
-          val matrix = constructMatrix(newFile, oldFile)
-          val listDif = getDiffList(matrix, newFile.length, oldFile.length)
+          val matrix = constructMatrix(head.contentNewFile, head.contentOldFile)
+          val listDif = getDiffList(matrix, head.contentNewFile.length, head.contentOldFile.length)
 
           if (listDif.nonEmpty) {
             val nbAddition = listDif.count(_._1 == "+")
@@ -198,7 +254,7 @@ object Diff {
 
             val sumAdditionDeletion = nbAddition + nbDeletion
 
-            val resultUpdated = result + head._3.replace(repoPath + File.separator, "") + " | " + sumAdditionDeletion + " (" + Console.GREEN + nbAddition + "++" + Console.RESET + " " + Console.RED + nbDeletion + "--" + Console.RESET + ")" + "\n"
+            val resultUpdated = result + head.nameFileToPrint.replace(repoPath + File.separator, "") + " | " + sumAdditionDeletion + " (" + Console.GREEN + nbAddition + "++" + Console.RESET + " " + Console.RED + nbDeletion + "--" + Console.RESET + ")" + "\n"
             loop(tail, resultUpdated, sumFilesUpdated, sumAdditionUpdated, sumDeletionUpdated)
 
           }
@@ -209,10 +265,8 @@ object Diff {
     }
 
 
-    loop(pathsToDiff, "", 0,0,0)
+    loop(filesToDif, "", 0, 0, 0)
   }
-
-
 
 
 }
