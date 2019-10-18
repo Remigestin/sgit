@@ -118,6 +118,9 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
 
     Add.add(repoPath, Seq(testFilePath))
+    val indexLinesOld = IndexUtil.readIndexToList(repoPath)
+
+    assert(indexLinesOld.length == 1)
 
     new File(testFilePath).delete()
     Add.add(repoPath, Seq(testFilePath))
