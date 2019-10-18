@@ -15,13 +15,17 @@ object SgitObjectUtil {
    */
   def createSgitObject(repoPath: String, content: String): String = {
     val sha = sha1Hash(content)
-    val sgitPath = repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + sha
+    val sgitPath = getPathSgitObject(repoPath, sha)
     editFile(sgitPath, content, append = false)
     sha
   }
 
   def readSgitObjectToList(repoPath: String, sha: String): List[String] = {
-    readFileToList(repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + sha)
+    readFileToList(getPathSgitObject(repoPath, sha))
+  }
+
+  def getPathSgitObject(repoPath: String, sha:String): String = {
+    repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + sha
   }
 
 }

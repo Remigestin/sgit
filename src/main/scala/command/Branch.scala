@@ -23,6 +23,12 @@ object Branch {
 
   def branchAV(repoPath: String): Unit = {
 
+    if (CommitUtil.isThereACommit(repoPath)) {
+
+    }
+
+
+
   }
 
 }

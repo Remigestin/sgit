@@ -6,6 +6,7 @@ import command.Log.{getAllCommits, getLogResult}
 import util.{BranchUtil, CommitUtil, SgitObjectUtil}
 
 import scala.annotation.tailrec
+import util.SgitObjectUtil._
 
 object Log {
 
@@ -81,7 +82,14 @@ object Log {
     loop(listCommit, "")
   }
 
-  def getLogOption(repoPath: String, listCommit: List[(String, String)], option: ( List[(String, String, String)], String) => String): String = {
+  /**
+   *
+   * @param repoPath   : the path of the repo
+   * @param listCommit : list of all the tuples representing the commits with the pattern (sha, content)
+   * @param option     : function of diff to apply to the commits
+   * @return the string to print in the terminal of the diff of the listCommit for the option asked.
+   */
+  def getLogOption(repoPath: String, listCommit: List[(String, String)], option: (List[(String, String, String)], String) => String): String = {
 
     @tailrec
     def loop(listCurrent: List[(String, String)], result: String): String = {
@@ -103,7 +111,7 @@ object Log {
             val mapCommitParent = CommitUtil.getMapOfCommit(repoPath, shaCommitParent)
 
             val listTuplesToCompare = getListTuples(mapCommitCurrent, mapCommitParent)
-              .map(tuple => (repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._2, tuple._3))
+              .map(tuple => (getPathSgitObject(repoPath, tuple._1), getPathSgitObject(repoPath, tuple._2), tuple._3))
 
 
             val stringAllDiff = option(listTuplesToCompare, repoPath)
@@ -124,7 +132,7 @@ object Log {
             val mapEmpty = Map(("", "")).withDefaultValue("")
 
             val listTuplesToCompare = getListTuples(mapCommitCurrent, mapEmpty)
-              .map(tuple => (repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._1, repoPath + File.separator + ".sgit" + File.separator + "objects" + File.separator + tuple._2, tuple._3))
+              .map(tuple => (getPathSgitObject(repoPath, tuple._1), getPathSgitObject(repoPath, tuple._2), tuple._3))
 
             val stringAllDiff = option(listTuplesToCompare, repoPath)
 
@@ -145,6 +153,12 @@ object Log {
     loop(listCommit, "")
   }
 
+  /**
+   *
+   * @param repoPath   : the path of the repo
+   * @param lastCommit : the sha of the last commit to check
+   * @return a list of tuples with the pattern (sha, content)
+   */
   def getAllCommits(repoPath: String, lastCommit: String): List[(String, String)] = {
 
     @tailrec
@@ -167,6 +181,12 @@ object Log {
     loop(List(), lastCommit)
   }
 
+  /**
+   *
+   * @param mapNew : map of the new commits to diff with the pattern (path -> sha)
+   * @param mapOld : map of the old commits to diff with the pattern (path -> sha)
+   * @return a list of tuples representing the diff to effectuate wit the pattern (newSha, oldSha, pathFile)
+   */
   def getListTuples(mapNew: Map[String, String], mapOld: Map[String, String]): List[(String, String, String)] = {
 
     @tailrec
