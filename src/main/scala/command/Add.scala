@@ -12,11 +12,19 @@ import scala.io.Source
 
 object Add {
 
+  /**
+   *
+   * @param repoPath : path of the sgit repo
+   * @param files    : seq of the files to add
+   *                 this function realise the sgit add command
+   */
   def add(repoPath: String, files: Seq[String]): Unit = {
 
 
-    // retrieve the index file path and create it if it is not
-    val indexPath = getIndexPath(repoPath).get
+    // ---- IO STEP BEGINNING :
+
+    // create the index path if it's not
+    getIndexPath(repoPath)
 
     //For each pattern after the sgit add, we retrieve the path of all the corresponding files
     val filesListCurDir = files.map(f => new File(f)).filter(_.isFile)
@@ -49,7 +57,7 @@ object Add {
 
 
       //if the blob does not exist, we create the blob file
-     SgitObjectUtil.createSgitObject(repoPath, content)
+      SgitObjectUtil.createSgitObject(repoPath, content)
 
       //update the index file
       updateIndex(repoPath, hash, path)
@@ -59,7 +67,7 @@ object Add {
   def updateIndex(repoPath: String, hash: String, path: String): Unit = {
 
     //retrieve the path of the index file
-    val indexPath = getIndexPath(repoPath).get
+    val indexPath = getIndexPath(repoPath)
 
     //remove the old line
     removeIfPathAlreadyIndexed(repoPath, path)
@@ -69,7 +77,7 @@ object Add {
     editFile(indexPath, lineBlob, append = true)
   }
 
-  def isAlreadyIndexed(repoPath:String, hash: String, path: String): Boolean = {
+  def isAlreadyIndexed(repoPath: String, hash: String, path: String): Boolean = {
     val lines = readIndexToList(repoPath) mkString "\n"
     lines.contains(hash + " " + path)
   }
@@ -78,7 +86,7 @@ object Add {
     val lines = readIndexToList(repoPath)
     val indexString = lines mkString "\n"
     if (indexString.contains(path)) {
-      val indexPath = getIndexPath(repoPath).get
+      val indexPath = getIndexPath(repoPath)
       val linesList = lines.filterNot(l => l.split(" ")(1) == path)
       if (linesList.isEmpty)
         editFile(indexPath, "", append = false)

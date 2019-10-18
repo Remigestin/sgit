@@ -15,122 +15,125 @@ import scala.annotation.tailrec
 
 object Commit {
 
+  /**
+   *
+   * @param repoPath : path of the sgit Repo
+   * @param message  : message of the commit
+   * @return the message of the sgit commit command
+   */
   def commit(repoPath: String, message: String): String = {
 
-    //get all the lines of the index files
-    val listIndex = readIndexToList(repoPath)
+    //---- IO READING STEP
 
-    val mapIndex = readIndexToMap(repoPath)
+    //get the content of the index in a map : (src -> blob)
+    val mapIndexIO = readIndexToMap(repoPath)
+    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
+    val branchName = BranchUtil.getCurrentBranchName(repoPath)
 
-    //keep just the list of the paths cut in array.
+    //---- LOGIC STEP
+
+    //recover the sha of the treeCommit
+    val mapTreesToWrite = getContentTrees(mapIndexIO, repoPath)
+
+    //recover the sha of the mainTree
+    val contentTreeCommit = mapTreesToWrite("") mkString "\n"
+    val shaTreeCommit = sha1Hash(contentTreeCommit)
+
+    //---- IO WRITING STEP
+
+    IOWriteTreesObjects(repoPath, mapTreesToWrite.values.toList)
+    val notSameCommit = IOWriteCommitObject(repoPath, pathBranch, shaTreeCommit, message)
+
+    //---- MESSAGE RETURN STEP
+
+    if (notSameCommit) {
+      "Commit is ok"
+    }
+    else {
+      "On branch " + branchName + "\nNothing to commit, working tree clean"
+    }
+  }
+
+  /**
+   * @param mapIndex : map of the index file
+   * @param repoPath : path of the sgit repo
+   * @return map with all the contents of each trees (pure func)
+   */
+
+  def getContentTrees(mapIndex: Map[String, String], repoPath: String): Map[String, List[String]] = {
+
+    @tailrec
+    def loop(mapParent: Map[String, List[String]], depth: Int, pathsIndex: List[List[String]]): Map[String, List[String]] = {
+
+      val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
+
+      if (depth == 0) {
+        mapParent
+      }
+
+      else {
+
+        //filter only the paths which match with the current val of size param and remove the duplicate ones, and string it
+
+        val pathsCurrentSize = pathsIndex
+          .filter(l => l.length == depth)
+          .map(l => l mkString separator)
+          .distinct
+
+        //---- STEP OF THE CREATION OF BLOB LINES
+
+        //filter only the blob (the files)
+        val blobs = pathsCurrentSize.filter(f => new File(f).isFile)
+
+        //recover the paths of the parents directory for each blob
+        val pathsBlobParent = blobs.map(blob => blob.split(separatorSplit).slice(0, blob.split(separatorSplit).length - 1) mkString separator)
+
+        //creation of the line of the blob in the future tree file with this pattern :  "blob sha1 name"
+        val linesBlobChildren = blobs.map(blob => "blob " + mapIndex(blob) + " " + blob.split(separatorSplit).last)
+
+        //update the map of the parents with the lines children created
+        val mapParentPostBlobsStep = updateMapParent(mapParent, pathsBlobParent, linesBlobChildren)
+
+        //----  STEP OF THE CREATION OF TREE LINES
+
+        //filter only the directories
+        val pathsDir = pathsCurrentSize.filter(f => new File(f).isDirectory)
+
+        //recover the paths of the parents directory for each directory
+        val pathsDirParent = pathsDir.map(tree => tree.split(separatorSplit).slice(0, tree.split(separatorSplit).length - 1) mkString separator)
+
+        //creation of the line of the tree in the future parent tree file with this pattern :  "tree sha1 name"
+        val linesTreeChildren = pathsDir.map(dir => "tree " + sha1Hash(mapParentPostBlobsStep(dir) mkString "\n") + " " + dir.split(separatorSplit).last)
+
+        //update the map of the parents with the lines trees created
+        val mapParentPostTreesStep = updateMapParent(mapParentPostBlobsStep, pathsDirParent, linesTreeChildren)
+
+
+        //---  PREPARE THE NEXT RECURSION
+
+        //remove the elements created in this step, ie the element at the depth param position in each list.
+        val pathsSliced = pathsIndex.map(l => removeLastMax(l, depth))
+
+        //go to the depth -1 position
+        loop(mapParent = mapParentPostTreesStep, depth - 1, pathsSliced)
+      }
+    }
+
+    //get all the paths of the index files thanks to the keys of the mapIndex
+    val listIndex = mapIndex.keys.toList
+
+    //keep just the list of the paths cut in list ont the file separator
     val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
-    val listPathsIndex = listIndex.map(l => l.split(" ")(1).split(separatorSplit))
+    val listPathsIndex = listIndex.map(_.split(separatorSplit).toList)
 
     //sort the list by the greatest number of directories in each path
     val listSorted = listPathsIndex.sortBy(f => f.length).reverse
 
-    //recover the sha of the treeCommit
-    val shaTreeCommit = tree(pathsIndex = listSorted, depth = listSorted.head.length, mapIndex = mapIndex, repo = repoPath)
+    //retrieve the max depth with the list sorted
+    val depthMax = listSorted.head.length
 
-    val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
-
-    //check if it is the first commit or not and create the commit object
-    if (new File(pathBranch).exists()) {
-      if (shaTreeCommit == CommitUtil.getLastCommitTree(repoPath, BranchUtil.getCurrentBranchName(repoPath))) {
-        return "On branch " + BranchUtil.getCurrentBranchName(repoPath)  + "\nNothing to commit, working tree clean"
-      }
-      val commitParent = readFileToList(pathBranch).head
-      val contentCommit = "Tree " + shaTreeCommit + "\nParent " + commitParent + "\n\n" + message
-      val shaCommit = createSgitObject(repoPath, contentCommit)
-      editFile(pathBranch, shaCommit, append = false)
-    } else {
-      new File(pathBranch).createNewFile()
-      val contentCommit = "Tree " + shaTreeCommit + "\n\n" + message
-      val shaCommit = createSgitObject(repoPath, contentCommit)
-      editFile(pathBranch, shaCommit, append = false)
-    }
-    "Commit is ok"
-  }
-
-  /**
-   *
-   *
-   * @param pathsIndex : List of all paths in the index files sorted by number of dir.
-   * @param depth      : Size of the largest path in number of directories
-   * @param mapParent  : map which represent each path of directories referencing their future content whi is updated
-   * @param mapIndex   : map of the index file
-   * @param repo       : path of the sgit repo
-   * @return the sha1 main tree
-   */
-  @tailrec
-  def tree(pathsIndex: List[Array[String]], depth: Int, mapParent: Map[String, Array[String]] = Map(), mapIndex: Map[String, String], repo: String): String = {
-    val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
-    if (depth == 0) {
-      //---- here we can create the main tree
-
-      //retrieve his content and we sha1 it
-      val contentTreeCommit = mapParent("") mkString "\n"
-      val sha = sha1Hash(contentTreeCommit)
-
-      //create the file
-      val treeFilePath = repo + separator + ".sgit" + separator + "objects" + separator + sha
-      editFile(path = treeFilePath, content = contentTreeCommit, append = true)
-
-      //return the sha of the main tree
-      sha
-    } else {
-
-      //filter only the paths which match with the current val of size param and remove the duplicate ones, and string it
-
-      val pathsCurrentSize = pathsIndex
-        .filter(arr => arr.length == depth)
-        .map(arr => arr mkString separator)
-        .distinct
-
-      //---- STEP OF THE CREATION OF BLOB LINES
-
-      //filter only the blob (the files)
-      val blobs = pathsCurrentSize.filter(f => new File(f).isFile)
-
-      //recover the paths of the parents directory for each blob
-      val pathsBlobParent = blobs.map(blob => blob.split(separatorSplit).slice(0, blob.split(separatorSplit).length - 1) mkString separator)
-
-      //creation of the line of the blob in the future tree file with this pattern :  "blob sha1 name"
-      val linesBlobChildren = blobs.map(blob => "blob " + mapIndex(blob) + " " + blob.split(separatorSplit).last)
-
-      //update the map of the parents with the lines children created
-      val mapParentPostBlobsStep = updateMapParent(mapParent, pathsBlobParent, linesBlobChildren)
-
-      //----  STEP OF THE CREATION OF TREE LINES
-
-      //filter only the directories
-      val pathsDir = pathsCurrentSize.filter(f => new File(f).isDirectory)
-
-      //recover the paths of the parents directory for each directory
-      val pathsDirParent = pathsDir.map(tree => tree.split(separatorSplit).slice(0, tree.split(separatorSplit).length - 1) mkString separator)
-
-      //creation of the line of the tree in the future parent tree file with this pattern :  "tree sha1 name"
-      val linesTreeChildren = pathsDir.map(dir => "tree " + sha1Hash(mapParentPostBlobsStep(dir) mkString "\n") + " " + dir.split(separatorSplit).last)
-
-      //update the map of the parents with the lines trees created
-      val mapParentPostTreesStep = updateMapParent(mapParentPostBlobsStep, pathsDirParent, linesTreeChildren)
-
-
-      //--- STEP OF WRITING SGIT OBJECTS
-
-      //recovery the content of all the trees of the current step.
-      val contentTreeList = pathsDir.map(d => mapParentPostTreesStep(d) mkString "\n")
-
-      //sha1 and write the tree file
-      contentTreeList.foreach(content => editFile(repo + separator + ".sgit" + separator + "objects" + separator + sha1Hash(content), content, append = false))
-
-      //remove the elements created in this step, ie the element at the size param position in each array.
-      val pathsSliced = pathsIndex.map(arr => removeLastMax(arr, depth))
-
-      //go to the depth -1 position
-      tree(pathsIndex = pathsSliced, depth = depth - 1, mapIndex = mapIndex, repo = repo, mapParent = mapParentPostTreesStep)
-    }
-
+    //recursion
+    loop(Map(), depthMax, listSorted)
   }
 
   /**
@@ -141,7 +144,7 @@ object Commit {
    * @return the mapParent updated for a list of a path parent corresponding to a list of children
    */
   @tailrec
-  def updateMapParent(mapParent: Map[String, Array[String]], listPathsParents: List[String], listLinesChildren: List[String]): Map[String, Array[String]] = {
+  def updateMapParent(mapParent: Map[String, List[String]], listPathsParents: List[String], listLinesChildren: List[String]): Map[String, List[String]] = {
     if (listPathsParents == Nil) {
       mapParent
     } else {
@@ -153,32 +156,90 @@ object Commit {
 
   /**
    *
-   * @param mapParent
-   * @param pathParent
-   * @param lineChild
-   * @return update the mapParent updated for one parent and one element
+   * @param mapParent  : the map with the content of the trees
+   * @param pathParent : path of the parent of the element
+   * @param lineChild  : the element to add in the map parent
+   * @return update the mapParent for one parent and one element
    */
-  def updateMapParentElement(mapParent: Map[String, Array[String]], pathParent: String, lineChild: String): Map[String, Array[String]] = {
+  def updateMapParentElement(mapParent: Map[String, List[String]], pathParent: String, lineChild: String): Map[String, List[String]] = {
     if (mapParent.contains(pathParent)) {
       val oldListElements = mapParent(pathParent)
-      val newListElements = oldListElements.patch(0, Array(lineChild), 0)
+      val newListElements = oldListElements.patch(0, List(lineChild), 0)
       mapParent + (pathParent -> newListElements)
     } else {
-      mapParent + (pathParent -> Array(lineChild))
+      mapParent + (pathParent -> List(lineChild))
     }
   }
 
   /**
    *
-   * @param tab   : the tab to slice
-   * @param depth : the current size from the tree method
-   * @return the array tab without the elements at the current size position.
+   * @param path  : the list to reduce
+   * @param depth : the current depth from the tree method
+   * @return the list without the elements at the current depth
    */
-  def removeLastMax(tab: Array[String], depth: Int): Array[String] = {
-    if (tab.length == depth) {
-      tab.slice(0, tab.length - 1)
+  def removeLastMax(path: List[String], depth: Int): List[String] = {
+    if (path.length == depth) {
+      path.slice(0, path.length - 1)
     } else {
-      tab
+      path
+    }
+  }
+
+  /**
+   *
+   * @param repoPath     : the path of the sgit repo
+   * @param treesToWrite : the content of all the trees to write
+   *                     this is an IO function, it will write the sgit objects
+   */
+  def IOWriteTreesObjects(repoPath: String, treesToWrite: List[List[String]]): Unit = {
+
+    @tailrec
+    def loop(treesToWriteUpdated: List[List[String]]): Unit = {
+
+      treesToWriteUpdated match {
+
+        case Nil =>
+        case head :: tail =>
+
+          //recovery the content of all the trees of the current step.
+          val contentTree = head mkString "\n"
+          SgitObjectUtil.createSgitObject(repoPath, contentTree)
+
+          loop(tail)
+      }
+    }
+
+    loop(treesToWrite)
+  }
+
+  /**
+   *
+   * @param repoPath      : the path of the sgit repo
+   * @param pathBranch    : the path of the current branch file
+   * @param shaTreeCommit : the sha of the main tree of this commit
+   * @param message       : the message of the commit
+   * @return if a commit object has been created, ie is there something new to commit
+   */
+  def IOWriteCommitObject(repoPath: String, pathBranch: String, shaTreeCommit: String, message: String): Boolean = {
+    //check if it is the first commit or not and create the commit object
+    if (new File(pathBranch).exists()) {
+      if (shaTreeCommit == CommitUtil.getLastCommitTree(repoPath, BranchUtil.getCurrentBranchName(repoPath))) {
+        false
+      }
+      else {
+        val commitParent = readFileToList(pathBranch).head
+        val contentCommit = "Tree " + shaTreeCommit + "\nParent " + commitParent + "\n\n" + message
+        val shaCommit = createSgitObject(repoPath, contentCommit)
+        editFile(pathBranch, shaCommit, append = false)
+        true
+      }
+    }
+    else {
+      new File(pathBranch).createNewFile()
+      val contentCommit = "Tree " + shaTreeCommit + "\n\n" + message
+      val shaCommit = createSgitObject(repoPath, contentCommit)
+      editFile(pathBranch, shaCommit, append = false)
+      true
     }
   }
 }
