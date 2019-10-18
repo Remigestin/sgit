@@ -23,14 +23,14 @@ object Commit {
    */
   def commit(repoPath: String, message: String): String = {
 
-    //---- IO READING STEP
+    //----------------- IO READING STEP
 
     //get the content of the index in a map : (src -> blob)
     val mapIndexIO = readIndexToMap(repoPath)
     val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
     val branchName = BranchUtil.getCurrentBranchName(repoPath)
 
-    //---- LOGIC STEP
+    //------------------ PURE FUNCTIONAL STEP
 
     //recover the sha of the treeCommit
     val mapTreesToWrite = getContentTrees(mapIndexIO, repoPath)
@@ -39,12 +39,12 @@ object Commit {
     val contentTreeCommit = mapTreesToWrite("") mkString "\n"
     val shaTreeCommit = sha1Hash(contentTreeCommit)
 
-    //---- IO WRITING STEP
+    //------------------- IO WRITING STEP
 
     IOWriteTreesObjects(repoPath, mapTreesToWrite.values.toList)
     val notSameCommit = IOWriteCommitObject(repoPath, pathBranch, shaTreeCommit, message)
 
-    //---- MESSAGE RETURN STEP
+    //------------------- MESSAGE RETURN STEP
 
     if (notSameCommit) {
       "Commit is ok"
@@ -218,7 +218,7 @@ object Commit {
    * @param pathBranch    : the path of the current branch file
    * @param shaTreeCommit : the sha of the main tree of this commit
    * @param message       : the message of the commit
-   * @return if a commit object has been created, ie is there something new to commit
+   * @return if a commit object has been created, ie is there something new to commit (IO Function)
    */
   def IOWriteCommitObject(repoPath: String, pathBranch: String, shaTreeCommit: String, message: String): Boolean = {
     //check if it is the first commit or not and create the commit object

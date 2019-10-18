@@ -21,7 +21,7 @@ object Add {
   def add(repoPath: String, files: Seq[String]): Unit = {
 
 
-    // ---- IO STEP BEGINNING :
+    // ---------------- IO READING STEP
 
     // create the index path if it's not
     getIndexPath(repoPath)
