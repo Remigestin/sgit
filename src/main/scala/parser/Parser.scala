@@ -64,17 +64,21 @@ object Parser extends App {
             .action((x, c) => c.copy(libName = x))
             .text("name of the branch")
         ),
-      cmd("diff")
-        .action((_, c) => c.copy(mode = "diff"))
-        .text("show the diff between the index and the working tree"),
       cmd("log")
         .action((_, c) => c.copy(mode = "log"))
         .text("show the log of the repo for the current branch")
         .children(
           opt[Unit]('p', name = "patch")
-            .action((x, c) => c.copy(patch = true))
-            .text("show changes overtime")
+            .action((_, c) => c.copy(option = "patch"))
+            .text("show changes overtime"),
+          opt[Unit]('s', name = "stat")
+            .action((_, c) => c.copy(option = "stat"))
+            .text("show stats about changes overtime")
         ),
+      cmd("diff")
+        .action((_, c) => c.copy(mode = "diff"))
+        .text("show the diff between the index and the working tree"),
+
     )
   }
 
@@ -133,11 +137,9 @@ object Parser extends App {
 
         case "log" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            if(!config.patch) {
-              println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, ""))
-            } else {
-              println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, "patch"))
-            }
+
+            println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, config.option))
+
           else
             repoNotFound()
 

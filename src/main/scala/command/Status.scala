@@ -12,9 +12,12 @@ object Status {
 
   def status(curDir: String): String = {
 
+    //--------------------------- IO READING STEP
     val repoPath = Repo.getRepoPath(curDir).get
 
 
+
+    //---------------------------- PURE FUNCTIONAL STEP
     val untracked = "Untracked files:\n " + "(use \"sgit add <file>...\" to include in what will be committed)\n\n" +  Console.RED + (getAllPathsUntracked(repoPath, curDir) mkString "\n") + Console.RESET
     val trackedModifiedNotAdd = "Changes not staged for commit:\n  (use \"sgit add <file>...\" to update what will be committed)\n\n" +  Console.RED + (getAllPathsTrackedModifiedNotAdd(repoPath, curDir).map("modified:   " + _) mkString "\n") + "\n" + (getAllDeletionsNotStaged(repoPath, curDir).map("deleted:   " + _) mkString "\n") + Console.RESET
 

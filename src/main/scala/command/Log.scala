@@ -32,20 +32,16 @@ object Log {
 
       val listAllCommitsToDiff = getListFilesToDiffAllCommits(repoPath, listAllCommits)
 
-      //log -p
-      if (option == "patch") {
-        "branch " + branchName + "\n\n" + getLogOption(repoPath, listAllCommitsToDiff, Diff.getDiffAllFiles)
-      }
+      option match {
+        //log -p
+        case "patch" =>  "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommitsToDiff, Some(Diff.getDiffAllFiles))
 
-      //log --stat
-      else if (option == "stat") {
-        "branch " + branchName + "\n\n" + getLogOption(repoPath, listAllCommitsToDiff, Diff.getDiffStatAllFiles)
+        //log --stat
+        case "stat" => "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommitsToDiff, Some(Diff.getDiffStatAllFiles))
+
+        //log
+        case _ => "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommitsToDiff, None)
       }
-      //log
-      else {
-        "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommits)
-      }
-      //recover the result of a log
 
     } else {
       "there is no commit"
@@ -55,44 +51,12 @@ object Log {
 
   /**
    *
-   * @param repoPath   : path of the Repo
-   * @param listCommit : List with all the commits, the pattern for each commit is is (shaCommit, contentCommit). The list has the more recent commit in first.
-   * @return the result of sgit log in String : for each commit his sha and his message
-   */
-  def getLogResult(repoPath: String, listCommit: List[(String, String)]): String = {
-
-    @tailrec
-    def loop(listCurrent: List[(String, String)], result: String): String = {
-
-      listCurrent match {
-        case Nil => result
-        case head :: tail =>
-
-          //recover the message of the commit
-          val messageCommit = head._2.split("\n\n")(1)
-
-          //create the string for a commit
-          val stringCommit = Console.YELLOW + "commit " + head._1 + Console.RESET + "\n\n      " + messageCommit + "\n\n"
-
-          //update the result of the sgit diff
-          val resultUpdated = stringCommit + result
-
-          //recursion
-          loop(tail, resultUpdated)
-      }
-    }
-
-    loop(listCommit, "")
-  }
-
-  /**
-   *
    * @param repoPath         : the path of the repo
-   * @param listCommitToDiff : list of all the tuples representing the commits with the pattern (sha, content)
-   * @param option           : function of diff to apply to the commits
+   * @param listCommitToDiff : list of all the commit to diff
+   * @param option           : function of diff to apply to the commitToDiff
    * @return the string to print in the terminal of the diff of the listCommit for the option asked.
    */
-  def getLogOption(repoPath: String, listCommitToDiff: List[CommitToDiff], option: (List[FilesToDiff], String) => String): String = {
+  def getLogResult(repoPath: String, listCommitToDiff: List[CommitToDiff], option: Option[(List[FilesToDiff], String) => String]): String = {
 
     @tailrec
     def loop(listCurrent: List[CommitToDiff], result: String): String = {
@@ -100,16 +64,25 @@ object Log {
       listCurrent match {
         case Nil => result
         case head :: tail =>
-
-          val stringAllDiff = option(head.listFilesToDiff, repoPath)
-
           //create the string for a commit
-          val stringCommit = Console.YELLOW + "commit " + head.sha + Console.RESET + "\n\n      " + head.message + "\n\nDiffs : " + "\n" + stringAllDiff + "\n\n"
+          val stringCommit = Console.YELLOW + "commit " + head.sha + Console.RESET + "\n\n      " + head.message + "\n\n"
 
-          //update the result of the sgit diff
-          val resultUpdated = stringCommit + result
+          if (option.isEmpty) {
+            //recursion
+            loop(tail, stringCommit + result)
 
-          loop(tail, resultUpdated)
+          } else {
+            val stringAllDiff = option.get(head.listFilesToDiff, repoPath)
+
+            //create the string for a commit
+            val stringCommitOption = stringCommit + "Diffs : " + "\n" + stringAllDiff + "\n\n"
+
+            //update the result of the sgit diff
+            val resultUpdated = stringCommitOption + result
+
+            //recursion
+            loop(tail, resultUpdated)
+          }
       }
     }
 
@@ -147,8 +120,8 @@ object Log {
   /**
    *
    * @param repoPath : the path of the sgit repo
-   * @param mapNew   : map of the new commits to diff with the pattern (path -> sha)
-   * @param mapOld   : map of the old commits to diff with the pattern (path -> sha)
+   * @param mapNew   : map of the new commits to diff with the pattern (path -> content)
+   * @param mapOld   : map of the old commits to diff with the pattern (path -> content)
    * @return a list of FilesToDiff representing the diff to effectuate for one commit
    */
   def getListFilesToDiffForOneCommit(repoPath: String, mapNew: Map[String, List[String]], mapOld: Map[String, List[String]]): List[FilesToDiff] = {

@@ -16,5 +16,6 @@ case class Config(
                    keepalive: Boolean = false,
                    patch: Boolean = false,
                    jars: Seq[File] = Seq(),
+                   option: String = "",
                    kwargs: Map[String, String] = Map())
 
