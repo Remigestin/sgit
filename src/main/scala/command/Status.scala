@@ -122,7 +122,7 @@ object Status {
     if (CommitUtil.isThereACommit(repoPath)) {
       val commit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
 
-      val srcsCommit = CommitUtil.getMapOfCommit(repoPath, commit).keys.toList
+      val srcsCommit = CommitUtil.getCommitMap(repoPath, commit).keys.toList
       val srcsIndex = readIndexToMap(repoPath).keys.toList
 
       val listRep = srcsCommit diff srcsIndex
