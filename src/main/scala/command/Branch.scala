@@ -28,10 +28,11 @@ object Branch {
       //--IO
       val listBranches = BranchUtil.getAllBranchesOrTagItem(repoPath, "branches")
       val listTags = BranchUtil.getAllBranchesOrTagItem(repoPath, "tags")
+      val branchName = BranchUtil.getCurrentBranchName(repoPath)
 
       //--FP
-      val branchCurrentItem = listBranches.filter(BranchUtil.getCurrentBranchName(repoPath) == _.name).map(b => Console.GREEN + b.toString + Console.RESET +"\n")
-      val listBranchWithoutCurrentBranch = listBranches.filterNot(BranchUtil.getCurrentBranchName(repoPath) == _.name)
+      val branchCurrentItem = listBranches.filter(branchName == _.name).map(b => Console.GREEN + b.toString + Console.RESET +"\n")
+      val listBranchWithoutCurrentBranch = listBranches.filterNot(branchName == _.name)
 
 
       val repWithBranches =  "Branches : \n" + branchCurrentItem.head + (listBranchWithoutCurrentBranch.map(_.toString) mkString "\n")

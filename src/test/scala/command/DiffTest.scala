@@ -2,6 +2,7 @@ package command
 
 import java.io.File
 
+import command.Diff.{constructMatrix, getDiffList}
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import util.FileUtil
 
@@ -26,17 +27,20 @@ class DiffTest extends FlatSpec with BeforeAndAfterEach {
     new Directory(new File(".test")).deleteRecursively()
   }
 
-  //TODO : the diff test
   "The diff command" should "return the good diffs" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
 
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
+    val contentTest = FileUtil.readFileToList(testFilePath)
+
     Add.add(repoPath, Seq(testFilePath, testFilePath2))
 
     FileUtil.editFile(testFilePath, "\nET AUSSI ALIAAAAA CA CEST UNE DIFF",append = true)
     FileUtil.editFile(testFilePath2, "j ai remis a 0 ton fichier!", append = false)
+
+
   }
 
 }

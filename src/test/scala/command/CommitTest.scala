@@ -4,7 +4,7 @@ import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, FunSuite}
 import util.BranchUtil.getCurrentBranchPath
-import util.{BranchUtil, CommitUtil, FileUtil}
+import util.{BranchUtil, CommitUtil, FileUtil, SgitObjectUtil}
 
 import scala.reflect.io.Directory
 
@@ -49,9 +49,40 @@ class CommitTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "create commit in .sgit/objects with the right content" in {
+
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    Commit.commit(repoPath, "commit")
+
+    val shaCommit = CommitUtil.getLastCommitObject(repoPath, "master").get
+    val contentCommit = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit)
+
+    assert(contentCommit(0).startsWith("Tree"))
+
+    Add.add(repoPath, Seq(".test" + File.separator + "test2"))
+
+    Commit.commit(repoPath, "commit 2")
+    val shaCommitFils = CommitUtil.getLastCommitObject(repoPath, "master").get
+    val contentCommitFils = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommitFils)
+
+    assert(contentCommitFils(1).startsWith("Parent"))
+    assert(contentCommitFils(1).contains(shaCommit))
+
   }
 
   it should "create all trees of the commit tree in .sgit/objects" in {
+
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    Commit.commit(repoPath, "commit")
+
+    val shaCommit = CommitUtil.getLastCommitObject(repoPath, "master").get
+    val contentCommit = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit)
+
+    val shaTree = contentCommit(0).split(" ")(1)
+
+    assert(shaTree == CommitUtil.getTreeFromCommit(repoPath, shaCommit))
+
+    assert(new File(SgitObjectUtil.getPathSgitObject(repoPath, shaTree)).exists())
+
   }
 
   it should "update the current branch with the commit" in {

@@ -98,10 +98,7 @@ object Parser extends App {
 
         case "commit" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            if (IndexUtil.isIndexCreated(Repo.getRepoPath(System.getProperty("user.dir")).get))
-              println(Commit.commit(Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
-            else
-              indexNotCreated()
+            println(Commit.commit(Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
           else
             repoNotFound()
 
@@ -113,19 +110,13 @@ object Parser extends App {
 
         case "tag" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            if (CommitUtil.isThereACommit(Repo.getRepoPath(System.getProperty("user.dir")).get))
-              println(Tag.tag(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName))
-            else
-              noCommit()
+            println(Tag.tag(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName))
           else
             repoNotFound()
 
         case "branch" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            if (CommitUtil.isThereACommit(Repo.getRepoPath(System.getProperty("user.dir")).get))
-              Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName)
-            else
-              noCommit()
+            Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName)
           else
             repoNotFound()
 
@@ -137,9 +128,7 @@ object Parser extends App {
 
         case "log" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-
             println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, config.option))
-
           else
             repoNotFound()
 

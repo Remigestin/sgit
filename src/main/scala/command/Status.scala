@@ -8,7 +8,8 @@ import util.{BranchUtil, CommitUtil, FileUtil, IndexUtil}
 import util.FileUtil.recursiveListFiles
 import util.IndexUtil._
 
-class StatusLists(val untrackedFiles: List[String], val trackedModifiedNotAdd: List[String], val trackedNeverCommitted: List[String], val trackedAndCommittedModified: List[String], val deletionsNotStaged: List[String], val deletionsNotCommitted: List[String])
+class StatusLists(val untrackedFiles: List[String], val trackedModifiedNotAdd: List[String], val trackedNeverCommitted: List[String],
+                  val trackedAndCommittedModified: List[String], val deletionsNotStaged: List[String], val deletionsNotCommitted: List[String])
 
 object Status {
 
@@ -22,7 +23,7 @@ object Status {
 
     //recover the path of all the files in the repoPath
     val allFilesRepoList = FileUtil
-      .recursiveListFiles(new File(repoPath)).toList
+      .recursiveListFiles(new File(repoPath))
       .filter(_.isFile)
       .filter(!_.getAbsolutePath.contains(".sgit"))
       .map(_.getAbsolutePath)
