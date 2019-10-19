@@ -8,7 +8,11 @@ import java.util.regex.Pattern
 
 import scala.annotation.tailrec
 
-class BranchItem(val name: String, val shaCommit: String, val commitMsg: String)
+class BranchItem(val name: String, val shaCommit: String, val commitMsg: String) {
+  override def toString: String = {
+    name + " "+ shaCommit.slice(0,7) + " " + commitMsg +"\n"
+  }
+}
 
 object BranchUtil {
 

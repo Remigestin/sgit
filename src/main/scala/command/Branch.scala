@@ -30,12 +30,12 @@ object Branch {
       val listTags = BranchUtil.getAllBranchesOrTagItem(repoPath, "tags")
 
       //--FP
-      val branchCurrentItem = listBranches.filter(BranchUtil.getCurrentBranchName(repoPath) == _.name).map(b => Console.GREEN +b.name + " " + b.shaCommit + " " + b.commitMsg + Console.RESET +"\n")
+      val branchCurrentItem = listBranches.filter(BranchUtil.getCurrentBranchName(repoPath) == _.name).map(b => Console.GREEN + b.toString + Console.RESET +"\n")
       val listBranchWithoutCurrentBranch = listBranches.filterNot(BranchUtil.getCurrentBranchName(repoPath) == _.name)
 
 
-      val repWithBranches =  "Branches : \n" + branchCurrentItem.head + (listBranchWithoutCurrentBranch.map(b => b.name + " " + b.shaCommit + " " + b.commitMsg) mkString "\n")
-      val repWithAll = repWithBranches + "\n\n Tags : \n" + (listTags.map(b => b.name + " " + b.shaCommit + " " + b.commitMsg) mkString "\n")
+      val repWithBranches =  "Branches : \n" + branchCurrentItem.head + (listBranchWithoutCurrentBranch.map(_.toString) mkString "\n")
+      val repWithAll = repWithBranches + "\n\n Tags : \n" + (listTags.map(_.toString) mkString "\n")
 
       repWithAll
 
