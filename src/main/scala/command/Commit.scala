@@ -27,6 +27,9 @@ object Commit {
 
     //get the content of the index in a map : (src -> blob)
     val mapIndexIO = readIndexToMap(repoPath)
+    if (mapIndexIO.isEmpty) {
+      return "nothing to commit"
+    }
     val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
     val branchName = BranchUtil.getCurrentBranchName(repoPath)
 

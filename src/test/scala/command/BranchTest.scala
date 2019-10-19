@@ -73,6 +73,25 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
     assert(contentBranch1 == contentBranch2)
   }
 
+  "The commande branch -av" should "print all the branches and tags" in {
+
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val nameBranch = "name"
+
+    Commit.commit(repoPath, "commit")
+    Branch.branch(repoPath, nameBranch)
+
+    Add.add(repoPath, Seq(".test" + File.separator + "test2"))
+
+    Commit.commit(repoPath, "deuxieme commit")
+    Tag.tag(repoPath, "aalia")
+
+
+    println(Branch.branchAV(repoPath))
+
+
+  }
+
 }
 
 

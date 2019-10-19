@@ -8,6 +8,8 @@ import java.util.regex.Pattern
 
 import scala.annotation.tailrec
 
+class BranchItem(val name: String, val shaCommit: String, val commitMsg: String)
+
 object BranchUtil {
 
   def getCurrentBranchName(repoPath: String): String = {
@@ -31,24 +33,25 @@ object BranchUtil {
   /**
    *
    * @param repoPath : path of the sgit repo
-   * @return the list of all the branches with this pattern for each branch : (name, shaCommit, contentCommit)
+   * @return the list of all the branches with this pattern for each branch : (name, shaCommit, commitMsg)
    */
-  def getAllBranches(repoPath: String): List[(String, String, String)] = {
+  def getAllBranchesOrTagItem(repoPath: String, nameToGet: String): List[BranchItem] = {
 
-    val pathBranches = repoPath + separator + ".sgit" + separator + "branches"
+    val pathItems = repoPath + separator + ".sgit" + separator + nameToGet
 
     @tailrec
-    def loop(result: List[(String, String, String)], listBranchesCurrent: List[File]): List[(String, String, String)] = {
+    def loop(result: List[BranchItem], listBranchesCurrent: List[File]): List[BranchItem] = {
 
       listBranchesCurrent match {
         case Nil => result
         case head :: tail =>
 
           val name = head.getName
-          val shaCommit = FileUtil.readFileToList(pathBranches + separator + name).head
+          val shaCommit = FileUtil.readFileToList(pathItems + separator + name).head
           val contentCommit = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit)  mkString "\n"
+          val messageCommit = contentCommit.split("\n\n").tail mkString "\n"
 
-          val resultUpdated = (name, shaCommit, contentCommit) :: result
+          val resultUpdated = new BranchItem(name,shaCommit,messageCommit) :: result
 
           loop(resultUpdated, tail)
       }
@@ -56,7 +59,7 @@ object BranchUtil {
     }
 
 
-    loop(List(), new File(pathBranches).listFiles().toList)
+    loop(List(), new File(pathItems).listFiles().toList)
 
 
 
