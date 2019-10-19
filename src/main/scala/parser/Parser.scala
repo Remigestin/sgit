@@ -134,9 +134,9 @@ object Parser extends App {
         case "log" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
             if(!config.patch) {
-              println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get))
+              println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, ""))
             } else {
-              println(Log.logOption(Repo.getRepoPath(System.getProperty("user.dir")).get, "patch"))
+              println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, "patch"))
             }
           else
             repoNotFound()

@@ -114,9 +114,9 @@ object Diff {
     @tailrec
     def loop(newLine: Int, oldLine: Int, listRep: List[(String, Int)]): List[(String, Int)] = {
 
-      //if all the matrix is read, return the listRep sort by the numline
+      //if all the matrix is read, return the listRep
       if (newLine == 0 && oldLine == 0) {
-        listRep.sortBy(_._2)
+        listRep
       }
 
       //if  the cursor is at the top of the matrix, go left

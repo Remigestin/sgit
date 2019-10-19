@@ -9,6 +9,8 @@ import javafx.scene.DepthTest
 
 import scala.annotation.tailrec
 
+class CommitMap(val map: Map[String, List[String]])
+
 object CommitUtil {
 
   def isThereACommit(repoPath: String): Boolean = {
@@ -67,9 +69,15 @@ object CommitUtil {
     }
   }
 
-  def getMapOfCommit(repoPath: String, shaCommit: String): Map[String, String] = {
+  /**
+   *
+   * @param repoPath  : the path of the sgit repo
+   * @param shaCommit : the hash of the commit object
+   * @return a map which represent all content of the commit with this pattern map(path -> content)
+   */
+  def getCommitMap(repoPath: String, shaCommit: String): Map[String, List[String]] = {
 
-    def loop(listContentTree: List[String], pathParent: String, mapCommit: Map[String, String]): Map[String, String] = {
+    def loop(listContentTree: List[String], pathParent: String, mapCommit: Map[String, List[String]]): Map[String, List[String]] = {
 
       //if the tree is completely read, return the mapCommit
       if (listContentTree.isEmpty) {
@@ -83,12 +91,15 @@ object CommitUtil {
         if (lineCurrent.split(" ")(0) == "blob") {
           val name = lineCurrent.split(" ")(2)
           val sha = lineCurrent.split(" ")(1)
+          val content = readSgitObjectToList(repoPath, sha)
+
+
           //if the file is in the racine, don't put a slash
           if (pathParent == "") {
-            val mapCommitUpdated = mapCommit + (name -> sha)
+            val mapCommitUpdated = mapCommit + (name -> content)
             loop(listContentTree.tail, pathParent, mapCommitUpdated)
           } else {
-            val mapCommitUpdated = mapCommit + (pathParent + File.separator + name -> sha)
+            val mapCommitUpdated = mapCommit + (pathParent + File.separator + name -> content)
             loop(listContentTree.tail, pathParent, mapCommitUpdated)
           }
         }
@@ -113,11 +124,8 @@ object CommitUtil {
     val shaTreeCommit = getTreeFromCommit(repoPath, shaCommit)
     val treeLists = readSgitObjectToList(repoPath, shaTreeCommit)
 
-    loop(treeLists, "", Map().withDefaultValue(""))
+    loop(treeLists, "", Map().withDefaultValue(List()))
   }
-
-
-
 
 
 }

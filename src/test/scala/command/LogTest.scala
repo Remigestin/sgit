@@ -78,7 +78,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
 
 
-   println(Log.logOption(repoPath, "stat"))
+   println(Log.log(repoPath, "stat"))
 
   }
 
