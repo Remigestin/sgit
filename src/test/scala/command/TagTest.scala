@@ -41,7 +41,7 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
     assert(new File(pathTag).exists())
 
     val content = FileUtil.readFileToList(pathTag).head
-    val shaCommit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     assert(shaCommit == content)
   }
 

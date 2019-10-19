@@ -40,9 +40,9 @@ class CommitTest extends FlatSpec with BeforeAndAfterEach {
   it should "not create commit object if the previous commit is the same" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     Commit.commit(repoPath, "commit")
-    val shaCommitObject = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommitObject = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     Commit.commit(repoPath, "commit 2")
-    val shaCommitObject2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommitObject2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
 
     assert(shaCommitObject == shaCommitObject2)
 
@@ -57,12 +57,12 @@ class CommitTest extends FlatSpec with BeforeAndAfterEach {
   it should "update the current branch with the commit" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
     Commit.commit(repoPath, "commit")
-    val shaCommitObject = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommitObject = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
 
     Add.add(repoPath, Seq(".test" + File.separator + "test2"))
 
     Commit.commit(repoPath, "commit 2")
-    val shaCommitObject2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommitObject2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
 
     assert(shaCommitObject != shaCommitObject2)
   }

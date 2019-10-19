@@ -36,13 +36,13 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
     Add.add(repoPath, Seq(testFilePath))
     Commit.commit(repoPath, "commit number 1")
-    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
 
 
     Add.add(repoPath, Seq(testFilePath2))
     Commit.commit(repoPath, "commit number 2")
-    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     val contentCommit2 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit2) mkString "\n"
 
     val listToTest = List((shaCommit1, contentCommit1), (shaCommit2, contentCommit2))
@@ -62,13 +62,13 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
     Add.add(repoPath, Seq(testFilePath))
     Commit.commit(repoPath, "commit number 1")
-    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
     FileUtil.editFile(testFilePath,"aLIAAAAAAA", append = true)
 
     Add.add(repoPath, Seq(testFilePath, testFilePath2))
     Commit.commit(repoPath, "commit number 2")
-    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     val contentCommit2 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit2) mkString "\n"
 
     new File(testFilePath).delete()

@@ -23,50 +23,19 @@ object CommitUtil {
     commit.head.split(" ")(1)
   }
 
-  def getLastCommitObject(repoPath: String, branchName: String): String = {
+  def getLastCommitObject(repoPath: String, branchName: String): Option[String] = {
     val pathBranch = repoPath + File.separator + ".sgit" + File.separator + "branches" + File.separator + branchName
-    readFileToList(pathBranch).head
+    if (new File(pathBranch).exists()) {
+      Some(readFileToList(pathBranch).head)
+    } else {
+      None
+    }
+
+
   }
 
   def getLastCommitTree(repoPath: String, branchName: String): String = {
-    getTreeFromCommit(repoPath, getLastCommitObject(repoPath, branchName))
-  }
-
-  @tailrec
-  def getHashOfPathInTheCommit(repoPath: String, pathToFind: String, shaTree: String): Option[String] = {
-    val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
-    val pathToFindTab = pathToFind.split(separatorSplit).toList
-
-    if (pathToFindTab.length == 1) {
-
-      val nameBlobToFind = pathToFindTab.head
-      val treeContent = readSgitObjectToList(repoPath, shaTree)
-      val treeContentWithOnlyBlob = treeContent.filter(_.split(" ")(0) == "blob")
-
-      val lineBlobToFind = treeContentWithOnlyBlob.filter(_.split(" ")(2) == nameBlobToFind)
-
-      if (lineBlobToFind.isEmpty) {
-        None
-      } else {
-        val shaBlobToFind = lineBlobToFind.head.split(" ")(1)
-        Some(shaBlobToFind)
-      }
-
-    } else {
-      val nameTreeToFind = pathToFindTab.head
-      val treeContent = readSgitObjectToList(repoPath, shaTree)
-      val treeContentWithOnlyTree = treeContent.filter(_.split(" ")(0) == "tree")
-
-      val lineTreeToFind = treeContentWithOnlyTree.filter(_.split(" ")(2) == nameTreeToFind)
-
-      if (lineTreeToFind.isEmpty) {
-        None
-      } else {
-        val shaTreeToFind = lineTreeToFind.head.split(" ")(1)
-        val pathToFindDeeper = pathToFindTab.tail mkString File.separator
-        getHashOfPathInTheCommit(repoPath, pathToFindDeeper, shaTreeToFind)
-      }
-    }
+    getTreeFromCommit(repoPath, getLastCommitObject(repoPath, branchName).get)
   }
 
   /**
@@ -75,7 +44,7 @@ object CommitUtil {
    * @param shaCommit : the hash of the commit object
    * @return a map which represent all content of the commit with this pattern map(path -> content)
    */
-  def getCommitMap(repoPath: String, shaCommit: String): Map[String, List[String]] = {
+  def getCommitMap(repoPath: String, shaCommit: Option[String]): Option[Map[String, List[String]]] = {
 
     def loop(listContentTree: List[String], pathParent: String, mapCommit: Map[String, List[String]]): Map[String, List[String]] = {
 
@@ -121,10 +90,16 @@ object CommitUtil {
       }
     }
 
-    val shaTreeCommit = getTreeFromCommit(repoPath, shaCommit)
-    val treeLists = readSgitObjectToList(repoPath, shaTreeCommit)
+    if(shaCommit.isDefined) {
+      val shaTreeCommit = getTreeFromCommit(repoPath, shaCommit.get)
+      val treeLists = readSgitObjectToList(repoPath, shaTreeCommit)
+      Some(loop(treeLists, "", Map().withDefaultValue(List())))
+    } else {
+      None
+    }
 
-    loop(treeLists, "", Map().withDefaultValue(List()))
+
+
   }
 
 

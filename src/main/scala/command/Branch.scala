@@ -9,7 +9,7 @@ object Branch {
   def branch(repoPath: String, name:String): String = {
 
     if (CommitUtil.isThereACommit(repoPath)) {
-      val shaCommit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath))
+      val shaCommit = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
       val pathBranch = repoPath + File.separator + ".sgit" + File.separator + "branches" + File.separator + name
       if (!new File(pathBranch).exists()) {
         FileUtil.editFile(pathBranch, shaCommit, append = false)

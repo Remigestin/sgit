@@ -83,7 +83,7 @@ object Commit {
         //---- STEP OF THE CREATION OF BLOB LINES
 
         //filter only the blob (the files)
-        val blobs = pathsCurrentSize.filter(f => new File(f).isFile)
+        val blobs = pathsCurrentSize.filter(f => new File(repoPath + File.separator + f).isFile)
 
         //recover the paths of the parents directory for each blob
         val pathsBlobParent = blobs.map(blob => blob.split(separatorSplit).slice(0, blob.split(separatorSplit).length - 1) mkString separator)
@@ -97,7 +97,7 @@ object Commit {
         //----  STEP OF THE CREATION OF TREE LINES
 
         //filter only the directories
-        val pathsDir = pathsCurrentSize.filter(f => new File(f).isDirectory)
+        val pathsDir = pathsCurrentSize.filter(f => new File(repoPath + File.separator + f).isDirectory)
 
         //recover the paths of the parents directory for each directory
         val pathsDirParent = pathsDir.map(tree => tree.split(separatorSplit).slice(0, tree.split(separatorSplit).length - 1) mkString separator)

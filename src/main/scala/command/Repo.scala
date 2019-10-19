@@ -12,19 +12,24 @@ object Repo {
 
   def init(currentPath : String): String = {
 
-    if (!new File(".sgit/").exists()) {
-      val dirs = List(".sgit", ".sgit/branches", ".sgit/tags", ".sgit/objects")
+    val pathSgit = currentPath + File.separator + ".sgit"
+
+    if (!new File(pathSgit).exists()) {
+
+      new File(pathSgit).mkdir()
+
+      val dirs = List("branches", "tags", "objects")
       // create the dirs ans the file HEAD
-      dirs.foreach(folder => new File(folder).mkdir())
-      new File(".sgit/HEAD").createNewFile()
+      dirs.foreach(folder => new File(pathSgit + File.separator + folder).mkdir())
+      new File(pathSgit + File.separator + "HEAD").createNewFile()
 
       //init the file HEAD with the future branch master
-      val pw = new PrintWriter(new File(".sgit/HEAD"))
+      val pw = new PrintWriter(new File(pathSgit + File.separator + "HEAD"))
       pw.write("branches" + File.separator + "master")
       pw.close()
 
       //return success message
-      "Initialized empty Sgit repository in " + currentPath + File.separator + ".sgit" + File.separator
+      "Initialized empty Sgit repository in " + pathSgit + File.separator
 
     } else {
       "This directory was already initialized with Sgit"

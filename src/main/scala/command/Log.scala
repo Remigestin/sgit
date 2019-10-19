@@ -25,7 +25,7 @@ object Log {
     //---------------------- IO READING STEP
     if (CommitUtil.isThereACommit(repoPath)) {
       val branchName = BranchUtil.getCurrentBranchName(repoPath)
-      val shaLastCommit = CommitUtil.getLastCommitObject(repoPath, branchName)
+      val shaLastCommit = CommitUtil.getLastCommitObject(repoPath, branchName).get
       val listAllCommits = getAllCommits(repoPath, shaLastCommit)
 
       //------------------ PURE FUNCTIONAL STEP
@@ -160,7 +160,7 @@ object Log {
           //recover the message of the commit
           val messageCommit = head._2.split("\n\n")(1)
 
-          val mapCommitCurrent = CommitUtil.getCommitMap(repoPath, head._1)
+          val mapCommitCurrent = CommitUtil.getCommitMap(repoPath, Some(head._1)).get
 
           val contentCommitList = head._2.split("\n")
 
@@ -168,7 +168,7 @@ object Log {
 
             val shaCommitParent = contentCommitList(1).split(" ")(1)
 
-            val mapCommitParent = CommitUtil.getCommitMap(repoPath, shaCommitParent)
+            val mapCommitParent = CommitUtil.getCommitMap(repoPath, Some(shaCommitParent)).get
 
             val listFilesToDiff = getListFilesToDiffForOneCommit(repoPath, mapCommitCurrent, mapCommitParent)
 
