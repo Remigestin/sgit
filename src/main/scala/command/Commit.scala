@@ -5,10 +5,10 @@ import java.io.File
 import java.io.File._
 import java.util.regex.Pattern
 
-import util.IndexUtil._
 import util.FileUtil._
+import util.IndexUtil._
 import util.SgitObjectUtil._
-import util.{BranchUtil, CommitUtil, IndexUtil, SgitObjectUtil}
+import util.{BranchUtil, CommitUtil, SgitObjectUtil}
 
 import scala.annotation.tailrec
 

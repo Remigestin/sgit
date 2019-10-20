@@ -2,7 +2,6 @@ package command
 
 import java.io.File
 
-import parser.ErrorMessage
 import util.{BranchUtil, CommitUtil, FileUtil}
 
 object Tag {

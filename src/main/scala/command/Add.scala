@@ -1,14 +1,10 @@
 package command
 
-import java.io.{File, FileOutputStream, FileWriter, PrintWriter}
-import java.nio.file.{Files, Paths, StandardCopyOption}
+import java.io.File
 
 import util.FileUtil._
 import util.IndexUtil._
 import util.SgitObjectUtil
-
-import scala.annotation.tailrec
-import scala.io.Source
 
 //type filesToIndex to check
 class FilesToIndex(val pathRelative: String, val content: String)

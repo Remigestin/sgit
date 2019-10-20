@@ -1,12 +1,8 @@
 package command
 
-import java.io.File
-
-import command.Log.{getAllCommits, getLogResult}
 import util.{BranchUtil, CommitUtil, SgitObjectUtil}
 
 import scala.annotation.tailrec
-import util.SgitObjectUtil._
 
 class CommitToDiff(val sha: String, val message: String, val listFilesToDiff: List[FilesToDiff])
 
@@ -16,7 +12,7 @@ object Log {
   /**
    *
    * @param repoPath : the path of the sgit repo
-   * @param option   : the option of the log command ("", "patch", "stat")
+   * @param option   : the option of the log command ("" or "patch" or "stat")
    * @return the message of the log command
    */
   def log(repoPath: String, option: String): String = {
@@ -34,7 +30,7 @@ object Log {
 
       option match {
         //log -p
-        case "patch" =>  "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommitsToDiff, Some(Diff.getDiffAllFiles))
+        case "patch" => "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommitsToDiff, Some(Diff.getDiffAllFiles))
 
         //log --stat
         case "stat" => "branch " + branchName + "\n\n" + getLogResult(repoPath, listAllCommitsToDiff, Some(Diff.getDiffStatAllFiles))
@@ -148,6 +144,12 @@ object Log {
     loop(List(), mapNew)
   }
 
+  /**
+   *
+   * @param repoPath   : the path of the sgit repo
+   * @param listCommit : the list of all the commits objects asked to diff (sha -> content)
+   * @return the list of all the CommitToDiff which each contains a list of FilesToDiff which represent the files in their commit
+   */
   def getListFilesToDiffAllCommits(repoPath: String, listCommit: List[(String, String)]): List[CommitToDiff] = {
 
     @tailrec
@@ -195,12 +197,8 @@ object Log {
             loop(tail, resultUpdated)
           }
       }
-
-
     }
 
     loop(listCommit, List())
-
   }
-
 }

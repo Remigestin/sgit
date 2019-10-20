@@ -1,18 +1,19 @@
 package command
 
 import java.io.{File, PrintWriter}
-import java.nio.file.{Files, Path, Paths}
-
-import util.FileUtil._
 
 import scala.annotation.tailrec
-import scala.util.matching.Regex
 
 object Repo {
 
-  def init(currentPath : String): String = {
+  /**
+   *
+   * @param path : the path were to init the sgit repo
+   * @return the success or fail message of the init command
+   */
+  def init(path: String): String = {
 
-    val pathSgit = currentPath + File.separator + ".sgit"
+    val pathSgit = path + File.separator + ".sgit"
 
     if (!new File(pathSgit).exists()) {
 
@@ -37,6 +38,11 @@ object Repo {
 
   }
 
+  /**
+   *
+   * @param path : the path were the sgit repo is asked
+   * @return the path of the sgit repo of the path in param
+   */
   @tailrec
   def getRepoPath(path: String): Option[String] = {
     if (path.isEmpty) None
@@ -49,6 +55,11 @@ object Repo {
     }
   }
 
+  /**
+   *
+   * @param curDir : the dir in question
+   * @return if the curDir param is in a sgit repo
+   */
   def isInASgitRepo(curDir: String): Boolean = {
     getRepoPath(curDir).isDefined
   }
