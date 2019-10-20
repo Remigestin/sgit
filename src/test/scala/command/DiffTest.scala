@@ -27,18 +27,29 @@ class DiffTest extends FlatSpec with BeforeAndAfterEach {
     new Directory(new File(".test")).deleteRecursively()
   }
 
-  "The diff command" should "return the good diffs" in {
+  "The diff command" should "create the good matrix of lcs" in {
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
 
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
     val contentTest = FileUtil.readFileToList(testFilePath)
+    val contentTest2 = FileUtil.readFileToList(testFilePath2)
 
-    Add.add(repoPath, Seq(testFilePath, testFilePath2))
+    val matrix = Diff.constructMatrix(contentTest,contentTest2)
 
-    FileUtil.editFile(testFilePath, "\nET AUSSI ALIAAAAA CA CEST UNE DIFF",append = true)
-    FileUtil.editFile(testFilePath2, "j ai remis a 0 ton fichier!", append = false)
+    //(7 * 5)
+    assert(matrix.toList.length == 35)
+    assert(matrix(0,0) == 0)
+
+    //alia / alia
+    assert(matrix(1,2) == 1)
+
+
+  }
+
+  it should "create the good list of diff" in {
+
 
 
   }

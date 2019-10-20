@@ -48,7 +48,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + "test" + File.separator + "test2"
-    val res = Status.getAllPathsUntracked(repoPath,mapIndex,allFilesRepoMap, curdir)
+    val res = Status.getAllPathsUntracked(mapIndex,allFilesRepoMap)
 
     val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
     val pathRel2 = Paths.get(curdir).relativize(Paths.get(testFilePath2)).toString
@@ -89,7 +89,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
 
 
-    val res = Status.getAllPathsTrackedModifiedNotAdd(repoPath,mapIndex,allFilesRepoMap,curdir)
+    val res = Status.getAllPathsTrackedModifiedNotAdd(mapIndex,allFilesRepoMap)
     val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
 
     assert(res.contains(pathRel))
@@ -112,7 +112,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     val branchName = BranchUtil.getCurrentBranchName(repoPath)
     val shaCommit = CommitUtil.getLastCommitObject(repoPath, branchName)
     val mapCommit = CommitUtil.getCommitMap(repoPath, shaCommit)
-    val res = Status.getAllPathTrackedNeverCommitted(repoPath,mapIndex,mapCommit,curdir)
+    val res = Status.getAllPathTrackedNotCommitted(mapIndex,mapCommit)
     val pathRel2 = Paths.get(curdir).relativize(Paths.get(testFilePath2)).toString
 
     assert(res.contains(pathRel2))
@@ -135,7 +135,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     val mapCommit = CommitUtil.getCommitMap(repoPath, shaCommit)
 
 
-    val res = Status.getAllPathTrackedAndCommittedModified(repoPath,mapIndex,mapCommit,curdir)
+    val res = Status.getAllPathTrackedAndCommittedModified(mapIndex,mapCommit)
     val pathRel = Paths.get(curdir).relativize(Paths.get(testFilePath)).toString
 
     assert(res.contains(pathRel))
@@ -167,7 +167,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
 
 
-    val res = Status.getAllDeletionsNotStaged(repoPath,mapIndex,allFilesRepoMap,curdir)
+    val res = Status.getAllDeletionsNotStaged(mapIndex,allFilesRepoMap)
 
     assert(res.length == 1)
     assert(res.head == "test" + File.separator + "test")
@@ -198,7 +198,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     val allFilesRepoMap = (allFilesRepoList zip contentFilesRepoList).toMap
 
-    val res = Status.getAllDeletionsNotStaged(repoPath,mapIndex,allFilesRepoMap,curdir)
+    val res = Status.getAllDeletionsNotStaged(mapIndex,allFilesRepoMap)
 
     assert(res.length == 1)
     assert(res.head == "test" + File.separator + "test")
@@ -225,7 +225,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
     val shaCommit = CommitUtil.getLastCommitObject(repoPath, branchName)
     val mapCommit = CommitUtil.getCommitMap(repoPath, shaCommit)
 
-    val res = Status.getAllDeletionsNotCommitted(repoPath,mapIndex,mapCommit,curdir)
+    val res = Status.getAllDeletionsNotCommitted(mapIndex,mapCommit)
 
     assert(res.length == 1)
     assert(res.head == "test" + File.separator + "test")

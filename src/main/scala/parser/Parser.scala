@@ -59,10 +59,15 @@ object Parser extends App {
         .text("create a branch")
         .children(
           arg[String]("branchName")
-            .required()
             .maxOccurs(1)
+            .optional()
             .action((x, c) => c.copy(libName = x))
-            .text("name of the branch")
+            .text("name of the branch"),
+          opt[Unit]('a', name = "all")
+            .action((_, c) => c.copy(av = true))
+            .text("List all branches and tags"),
+          opt[Unit]('v', name = "verbose")
+            .action((_, c) => c.copy(av = true))
         ),
       cmd("log")
         .action((_, c) => c.copy(mode = "log"))
@@ -104,7 +109,7 @@ object Parser extends App {
 
         case "status" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Status.status(System.getProperty("user.dir")))
+            println(Status.status(Repo.getRepoPath(System.getProperty("user.dir")).get))
           else
             repoNotFound()
 
@@ -116,7 +121,10 @@ object Parser extends App {
 
         case "branch" =>
           if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName)
+            if (config.av)
+              println(Branch.branchAV(Repo.getRepoPath(System.getProperty("user.dir")).get))
+            else
+              println(Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName))
           else
             repoNotFound()
 
