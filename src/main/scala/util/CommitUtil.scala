@@ -1,28 +1,41 @@
 package util
 
+import java.io.File
+
 import util.FileUtil.readFileToList
 import util.SgitObjectUtil._
-import java.io.File
-import java.util.regex.Pattern
-
-import javafx.scene.DepthTest
-
-import scala.annotation.tailrec
 
 class CommitMap(val map: Map[String, List[String]])
 
 object CommitUtil {
 
+  /**
+   *
+   * @param repoPath : the path of the sgit repo
+   * @return if there is a commit in the repo
+   */
   def isThereACommit(repoPath: String): Boolean = {
     val pathBranch = BranchUtil.getCurrentBranchPath(repoPath)
     new File(pathBranch).exists()
   }
 
+  /**
+   *
+   * @param repoPath  : the path of the sgit repo
+   * @param shaCommit : the sha1 of the commit asked
+   * @return the sha1 of the tree of the commit asked
+   */
   def getTreeFromCommit(repoPath: String, shaCommit: String): String = {
     val commit = readSgitObjectToList(repoPath, shaCommit)
     commit.head.split(" ")(1)
   }
 
+  /**
+   *
+   * @param repoPath   : the path of the sgit repo
+   * @param branchName : the name of the branch asked
+   * @return an option of the sha1 of the last commit of the branch asked. Return None if there was 0 commit.
+   */
   def getLastCommitObject(repoPath: String, branchName: String): Option[String] = {
     val pathBranch = repoPath + File.separator + ".sgit" + File.separator + "branches" + File.separator + branchName
     if (new File(pathBranch).exists()) {
@@ -34,6 +47,12 @@ object CommitUtil {
 
   }
 
+  /**
+   *
+   * @param repoPath   : the path of the sgit repo
+   * @param branchName : the name of the branch asked
+   * @return the sha1 of the tree of the last commit of the branch in param
+   */
   def getLastCommitTree(repoPath: String, branchName: String): String = {
     getTreeFromCommit(repoPath, getLastCommitObject(repoPath, branchName).get)
   }
@@ -41,8 +60,8 @@ object CommitUtil {
   /**
    *
    * @param repoPath  : the path of the sgit repo
-   * @param shaCommit : the hash of the commit object
-   * @return a map which represent all content of the commit with this pattern map(path -> content)
+   * @param shaCommit : the hash of the commit object (option)
+   * @return a option of a map which represent all content of the commit with this pattern map(path -> content). Return none if the shacommit is empty
    */
   def getCommitMap(repoPath: String, shaCommit: Option[String]): Option[Map[String, List[String]]] = {
 
@@ -90,14 +109,13 @@ object CommitUtil {
       }
     }
 
-    if(shaCommit.isDefined) {
+    if (shaCommit.isDefined) {
       val shaTreeCommit = getTreeFromCommit(repoPath, shaCommit.get)
       val treeLists = readSgitObjectToList(repoPath, shaTreeCommit)
       Some(loop(treeLists, "", Map().withDefaultValue(List())))
     } else {
       None
     }
-
 
 
   }

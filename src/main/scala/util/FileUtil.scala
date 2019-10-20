@@ -1,19 +1,19 @@
 package util
 
-import scala.util.matching.Regex
-import java.io.{ByteArrayOutputStream, File, FileInputStream, FileWriter}
-import java.security.MessageDigest
+import java.io.FileWriter
 import java.math.BigInteger
-
-import command.Repo
-
-import scala.annotation.tailrec
+import java.security.MessageDigest
 
 object FileUtil {
 
 
   import java.io.File
 
+  /**
+   *
+   * @param f : the directory asked
+   * @return recursively all the files of the directory in param
+   */
   def recursiveListFiles(f: File): Array[File] = {
     f.getName match {
       case "." =>
@@ -26,6 +26,11 @@ object FileUtil {
     }
   }
 
+  /**
+   *
+   * @param s : the string to hash
+   * @return : the sha1 of the string in param
+   */
   def sha1Hash(s: String): String = {
 
     val md = MessageDigest.getInstance("SHA1")
@@ -39,7 +44,8 @@ object FileUtil {
    *
    * @param path    : the path of the file
    * @param content : the content to edited in the file
-   *                edit the object passed in the path param with the content param. Create the file if it's not.
+   * @param append  : append the string in the file
+   *                edit the file passed in the path param with the content param. Create the file if it's not.
    */
   def editFile(path: String, content: String, append: Boolean): Unit = {
 
@@ -56,6 +62,11 @@ object FileUtil {
   }
 
 
+  /**
+   *
+   * @param path : the path of the file
+   * @return the content of the file in param in a list of string. return an empty list if the file does not exist
+   */
   def readFileToList(path: String): List[String] = {
 
     if (new File(path).exists && new File(path).isFile) {

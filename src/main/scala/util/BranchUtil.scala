@@ -16,6 +16,11 @@ class BranchItem(val name: String, val shaCommit: String, val commitMsg: String)
 
 object BranchUtil {
 
+  /**
+   *
+   * @param repoPath : the path of the sgit repo
+   * @return the name of the current branch, the default value is master
+   */
   def getCurrentBranchName(repoPath: String): String = {
     val separatorSplit = Pattern.quote(System.getProperty("file.separator"))
 
@@ -28,16 +33,23 @@ object BranchUtil {
     }
   }
 
+  /**
+   *
+   * @param repoPath : the path of the sgit repo
+   * @return the path of the current branch file
+   */
   def getCurrentBranchPath(repoPath: String): String = {
     val pathHead = repoPath + separator + ".sgit"  + separator + "HEAD"
     repoPath + separator + ".sgit" + separator + readFileToList(pathHead).head
 
   }
 
+
   /**
    *
-   * @param repoPath : path of the sgit repo
-   * @return the list of all the branches with this pattern for each branch : (name, shaCommit, commitMsg)
+   * @param repoPath : the path of the sgit repo
+   * @param nameToGet : the type of items that we want (tags or branches)
+   * @return the list of items which represent all the branches or all the tags
    */
   def getAllBranchesOrTagItem(repoPath: String, nameToGet: String): List[BranchItem] = {
 
@@ -61,20 +73,6 @@ object BranchUtil {
       }
 
     }
-
-
     loop(List(), new File(pathItems).listFiles().toList)
-
-
-
-
-
-
-
-
-
   }
-
-
-
 }
