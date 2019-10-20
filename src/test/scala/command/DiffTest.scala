@@ -35,22 +35,34 @@ class DiffTest extends FlatSpec with BeforeAndAfterEach {
     val contentTest = FileUtil.readFileToList(testFilePath)
     val contentTest2 = FileUtil.readFileToList(testFilePath2)
 
-    val matrix = Diff.constructMatrix(contentTest,contentTest2)
+    val matrix = Diff.constructMatrix(contentTest, contentTest2)
 
     //(7 * 5)
     assert(matrix.toList.length == 35)
-    assert(matrix(0,0) == 0)
+    assert(matrix(0, 0) == 0)
 
     //alia / alia
-    assert(matrix(1,2) == 1)
+    assert(matrix(1, 2) == 1)
 
 
   }
 
   it should "create the good list of diff" in {
 
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
 
+    val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
+    val contentTest = FileUtil.readFileToList(testFilePath)
+    val contentTest2 = FileUtil.readFileToList(testFilePath2)
+
+    val matrix = Diff.constructMatrix(contentTest, contentTest2)
+
+    val listDiff = List(("-", 1), ("+", 4), ("-", 5), ("-", 6))
+
+    assert(listDiff == Diff.getDiffList(matrix, contentTest.length, contentTest2.length))
   }
+
 
 }

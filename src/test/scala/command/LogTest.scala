@@ -49,10 +49,9 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
     val listRep = Log.getAllCommits(repoPath, shaCommit2)
 
-   assert(listToTest == listRep)
+    assert(listToTest == listRep)
 
   }
-
 
 
   it should "return the good content in option p" in {
@@ -64,7 +63,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     Commit.commit(repoPath, "commit number 1")
     val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
     val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
-    FileUtil.editFile(testFilePath,"aLIAAAAAAA", append = true)
+    FileUtil.editFile(testFilePath, "\nthis is an append", append = true)
 
     Add.add(repoPath, Seq(testFilePath, testFilePath2))
     Commit.commit(repoPath, "commit number 2")
@@ -77,9 +76,33 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
     Commit.commit(repoPath, "commit number 3")
 
 
+     assert(Log.log(repoPath, "patch").contains("l.1 -- Hello World"))
 
-   Log.log(repoPath, "stat")
+  }
 
+  it should "return the good content in log option -s" in {
+    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
+    val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
+
+    Add.add(repoPath, Seq(testFilePath))
+    Commit.commit(repoPath, "commit number 1")
+    val shaCommit1 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
+    val contentCommit1 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit1) mkString "\n"
+    FileUtil.editFile(testFilePath, "\nthis is an append", append = true)
+
+    Add.add(repoPath, Seq(testFilePath, testFilePath2))
+    Commit.commit(repoPath, "commit number 2")
+    val shaCommit2 = CommitUtil.getLastCommitObject(repoPath, BranchUtil.getCurrentBranchName(repoPath)).get
+    val contentCommit2 = SgitObjectUtil.readSgitObjectToList(repoPath, shaCommit2) mkString "\n"
+
+    new File(testFilePath).delete()
+
+    Add.add(repoPath, Seq(testFilePath, testFilePath2))
+    Commit.commit(repoPath, "commit number 3")
+
+
+    assert(Log.log(repoPath, "stat").contains("2 files changed, 2 insertions(+)"))
   }
 
 }
