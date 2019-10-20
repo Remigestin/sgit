@@ -4,7 +4,7 @@ import java.io.File
 import java.nio.file.Paths
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.{BranchUtil, CommitUtil, FileUtil, IndexUtil}
+import util.{BranchUtil, CommitUtil, FileUtil, IndexUtil, RepoUtil}
 
 import scala.reflect.io.Directory
 
@@ -15,14 +15,14 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     new File(".test").mkdir()
     new File(".test" + File.separator + "test").mkdir()
-    Repo.init(System.getProperty("user.dir") + File.separator + ".test")
+    Init.init(System.getProperty("user.dir") + File.separator + ".test")
     FileUtil.editFile(".test" + File.separator +  "test" + File.separator + "test", "Hello World", append = true)
     FileUtil.editFile(".test" + File.separator + "test" + File.separator + "test2", "hello, world", append = true)
   }
 
   //delete all files created in the .sgit and .test directory after each test
   override def afterEach(): Unit = {
-    val sgitPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get + File.separator + ".sgit"
+    val sgitPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get + File.separator + ".sgit"
     val sgitDir = new Directory(new File(sgitPath))
     sgitDir.deleteRecursively()
 
@@ -31,7 +31,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   "The status command" should "recover all the files untracked" in {
     val curdir =  System.getProperty("user.dir") + File.separator + ".test"
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val mapIndex = IndexUtil.readIndexToMap(repoPath)
 
     //recover the path of all the files in the repoPath
@@ -59,7 +59,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all indexed files edited but not added" in {
     val curdir =  System.getProperty("user.dir") + File.separator + ".test"
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
 
 
@@ -99,7 +99,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files added but never committed (if there was commits before)" in {
     val curdir =  System.getProperty("user.dir") + File.separator + ".test"
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + "test" + File.separator + "test2"
     Add.add(repoPath,Seq(testFilePath))
@@ -121,7 +121,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files added, but different from the last commit (if there was commits before)" in {
     val curdir =  System.getProperty("user.dir") + File.separator + ".test"
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
     Commit.commit(repoPath, "commit 1")
@@ -143,7 +143,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files in the index but which not exists anymore (with one file)" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
 
@@ -174,7 +174,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files in the index but which not exists anymore (with multi files)" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + "test" + File.separator + "test2"
     Add.add(repoPath,Seq(testFilePath, testFilePath2))
@@ -204,7 +204,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files not in the index but in the last commit" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + "test" + File.separator + "test2"
     Add.add(repoPath,Seq(testFilePath, testFilePath2))

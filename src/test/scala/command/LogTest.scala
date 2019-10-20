@@ -3,7 +3,7 @@ package command
 import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.{BranchUtil, CommitUtil, FileUtil, SgitObjectUtil}
+import util.{BranchUtil, CommitUtil, FileUtil, RepoUtil, SgitObjectUtil}
 
 import scala.reflect.io.Directory
 
@@ -11,8 +11,8 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
   //init an sgit repo and .test repo before each test
   override def beforeEach(): Unit = {
-    Repo.init(System.getProperty("user.dir"))
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    Init.init(System.getProperty("user.dir"))
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     new File(".test").mkdir()
     FileUtil.editFile(".test" + File.separator + "test", "Hello World", append = true)
     FileUtil.editFile(".test" + File.separator + "test2", "deuxieme, fichier", append = true)
@@ -22,7 +22,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
   //delete all files created in the .sgit and .test directory after each test
   override def afterEach(): Unit = {
-    val sgitPath = Repo.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
+    val sgitPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
     val sgitDir = new Directory(new File(sgitPath))
     sgitDir.deleteRecursively()
 
@@ -30,7 +30,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   "The command log" should "return the good content" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
@@ -55,7 +55,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
 
 
   it should "return the good content in option p" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 
@@ -81,7 +81,7 @@ class LogTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "return the good content in log option -s" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 

@@ -3,7 +3,7 @@ package command
 import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.{BranchUtil, CommitUtil, FileUtil}
+import util.{BranchUtil, CommitUtil, FileUtil, RepoUtil}
 
 import scala.reflect.io.Directory
 
@@ -11,8 +11,8 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
 
   //init an sgit repo and .test repo before each test
   override def beforeEach(): Unit = {
-    Repo.init(System.getProperty("user.dir"))
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    Init.init(System.getProperty("user.dir"))
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     new File(".test").mkdir()
     FileUtil.editFile(".test" + File.separator + "test", "Hello World", append = true)
     FileUtil.editFile(".test" + File.separator + "test2", "hello, world", append = true)
@@ -21,7 +21,7 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
 
   //delete all files created in the .sgit and .test directory after each test
   override def afterEach(): Unit = {
-    val sgitPath = Repo.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
+    val sgitPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
     val sgitDir = new Directory(new File(sgitPath))
     sgitDir.deleteRecursively()
 
@@ -30,7 +30,7 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
 
   "The tag command" should "create a tag file in .sgit/tags with the right content" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameTag = "name"
 
     Commit.commit(repoPath, "commit")
@@ -47,7 +47,7 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "not create a tag file if there is no commit" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameTag = "name"
     Tag.tag(repoPath, nameTag)
 
@@ -57,7 +57,7 @@ class TagTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "not create a tag if it is already exist" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameTag = "name"
     val pathTag = repoPath + File.separator + ".sgit" + File.separator + "tags" + File.separator + nameTag
     Commit.commit(repoPath, "commit")

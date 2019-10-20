@@ -3,7 +3,7 @@ package command
 import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.{BranchUtil, CommitUtil, FileUtil}
+import util.{BranchUtil, CommitUtil, FileUtil, RepoUtil}
 
 import scala.reflect.io.Directory
 
@@ -11,8 +11,8 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
 
   //init an sgit repo and .test repo before each test
   override def beforeEach(): Unit = {
-    Repo.init(System.getProperty("user.dir"))
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    Init.init(System.getProperty("user.dir"))
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     new File(".test").mkdir()
     FileUtil.editFile(".test" + File.separator + "test", "Hello World", append = true)
     FileUtil.editFile(".test" + File.separator + "test2", "hello, world", append = true)
@@ -21,7 +21,7 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
 
   //delete all files created in the .sgit and .test directory after each test
   override def afterEach(): Unit = {
-    val sgitPath = Repo.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
+    val sgitPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
     val sgitDir = new Directory(new File(sgitPath))
     sgitDir.deleteRecursively()
 
@@ -30,7 +30,7 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
 
   "The branch command" should "create a branch file in .sgit/branches with the right content" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameBranch = "name"
 
     Commit.commit(repoPath, "commit")
@@ -47,7 +47,7 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "not create a branch if there is no commit" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameBranch = "name"
     Branch.branch(repoPath, nameBranch)
 
@@ -57,7 +57,7 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "not create a branch if it is already exist with the same name" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameBranch = "name"
     val pathBranch = repoPath + File.separator + ".sgit" + File.separator + "branches" + File.separator + nameBranch
     Commit.commit(repoPath, "commit")
@@ -75,7 +75,7 @@ class BranchTest extends FlatSpec with BeforeAndAfterEach {
 
   "The command branch -av" should "print all the branches and tags" in {
 
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val nameBranch = "name"
 
     Commit.commit(repoPath, "commit")

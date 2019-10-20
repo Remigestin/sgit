@@ -3,7 +3,7 @@ package command
 import java.io.File
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
-import util.{FileUtil, IndexUtil}
+import util.{FileUtil, IndexUtil, RepoUtil}
 
 import scala.reflect.io.Directory
 
@@ -11,7 +11,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
 
   //init an sgit repo and .test repo before each test
   override def beforeEach(): Unit = {
-    Repo.init(System.getProperty("user.dir"))
+    Init.init(System.getProperty("user.dir"))
     new File(".test").mkdir()
     FileUtil.editFile(".test" + File.separator + "test", "Hello World", append = true)
     FileUtil.editFile(".test" + File.separator + "test2", "hello, world", append = true)
@@ -19,7 +19,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
 
   //delete all files created in the .sgit and .test directory after each test
   override def afterEach(): Unit = {
-    val sgitPath = Repo.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
+    val sgitPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get + File.separator + ".sgit"
     val sgitDir = new Directory(new File(sgitPath))
     sgitDir.deleteRecursively()
 
@@ -27,7 +27,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   "the add command" should "create index file if it is not already created in .sgit" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
 
     val indexPath = repoPath + File.separator + ".sgit" + File.separator + "index"
@@ -38,7 +38,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "add the good line for the given file in .sgit/INDEX file" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
 
     Add.add(repoPath, Seq(testFilePath))
@@ -52,7 +52,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "add multiple lines in the index file if there is several files added at the same time" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
 
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
@@ -73,7 +73,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "create the blob file which correspond to the content of the file added" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFile = new File(testFilePath)
 
@@ -89,7 +89,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "updates index file with the last version of each files" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
 
     Add.add(repoPath, Seq(testFilePath))
@@ -107,14 +107,14 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "not add a line in INDEX if arguments do not match any files" in {
     val currentDir = System.getProperty("user.dir")
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     Add.add(repoPath, Seq("anything"))
     val indexLines = IndexUtil.readIndexToList(repoPath)
     assert(indexLines.isEmpty)
   }
 
   it should "remove from the index a deleted file" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
 
     Add.add(repoPath, Seq(testFilePath))
@@ -129,7 +129,7 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
   }
 
   it should "remove from the index a deleted file (with some other file not deleted)" in {
-    val repoPath = Repo.getRepoPath(System.getProperty("user.dir")).get
+    val repoPath = RepoUtil.getRepoPath(System.getProperty("user.dir")).get
     val testFilePath = repoPath + File.separator + ".test" + File.separator + "test"
     val testFilePath2 = repoPath + File.separator + ".test" + File.separator + "test2"
 

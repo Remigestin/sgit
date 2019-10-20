@@ -3,6 +3,7 @@ package parser
 import command._
 import parser.ErrorMessage._
 import scopt.OParser
+import util.RepoUtil
 
 
 object Parser extends App {
@@ -90,50 +91,50 @@ object Parser extends App {
     case Some(config) =>
       config.mode match {
         case "init" =>
-          println(Repo.init(System.getProperty("user.dir")))
+          println(Init.init(System.getProperty("user.dir")))
 
         case "add" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            Add.add(Repo.getRepoPath(System.getProperty("user.dir")).get, config.files)
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
+            Add.add(RepoUtil.getRepoPath(System.getProperty("user.dir")).get, config.files)
           else
             repoNotFound()
 
         case "commit" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Commit.commit(Repo.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
+            println(Commit.commit(RepoUtil.getRepoPath(System.getProperty("user.dir")).get, config.commitMessage))
           else
             repoNotFound()
 
         case "status" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Status.status(Repo.getRepoPath(System.getProperty("user.dir")).get))
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
+            println(Status.status(RepoUtil.getRepoPath(System.getProperty("user.dir")).get))
           else
             repoNotFound()
 
         case "tag" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Tag.tag(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName))
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
+            println(Tag.tag(RepoUtil.getRepoPath(System.getProperty("user.dir")).get, config.libName))
           else
             repoNotFound()
 
         case "branch" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
             if (config.av)
-              println(Branch.branchAV(Repo.getRepoPath(System.getProperty("user.dir")).get))
+              println(Branch.branchAV(RepoUtil.getRepoPath(System.getProperty("user.dir")).get))
             else
-              println(Branch.branch(Repo.getRepoPath(System.getProperty("user.dir")).get, config.libName))
+              println(Branch.branch(RepoUtil.getRepoPath(System.getProperty("user.dir")).get, config.libName))
           else
             repoNotFound()
 
         case "diff" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Diff.diff(Repo.getRepoPath(System.getProperty("user.dir")).get))
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
+            println(Diff.diff(RepoUtil.getRepoPath(System.getProperty("user.dir")).get))
           else
             repoNotFound()
 
         case "log" =>
-          if (Repo.isInASgitRepo(System.getProperty("user.dir")))
-            println(Log.log(Repo.getRepoPath(System.getProperty("user.dir")).get, config.option))
+          if (RepoUtil.isInASgitRepo(System.getProperty("user.dir")))
+            println(Log.log(RepoUtil.getRepoPath(System.getProperty("user.dir")).get, config.option))
           else
             repoNotFound()
 
