@@ -94,15 +94,15 @@ class AddTest extends FlatSpec with BeforeAndAfterEach {
 
     Add.add(repoPath, Seq(testFilePath))
 
-    val shaPreviousModif = IndexUtil.readIndexToList(repoPath).head.split(" ")(0)
+    val shaPreviousUpdate = IndexUtil.readIndexToList(repoPath).head.split(" ")(0)
 
     FileUtil.editFile(testFilePath, "it is an update", append = true)
 
     Add.add(repoPath, Seq(testFilePath))
 
-    val shaAfterModif = IndexUtil.readIndexToList(repoPath).head.split(" ")(0)
+    val shaAfterUpdate = IndexUtil.readIndexToList(repoPath).head.split(" ")(0)
 
-    assert(shaPreviousModif != shaAfterModif)
+    assert(shaPreviousUpdate != shaAfterUpdate)
   }
 
   it should "not add a line in INDEX if arguments do not match any files" in {

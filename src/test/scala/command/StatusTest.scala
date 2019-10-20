@@ -3,7 +3,7 @@ package command
 import java.io.File
 import java.nio.file.Paths
 
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, FunSuite}
+import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import util.{BranchUtil, CommitUtil, FileUtil, IndexUtil}
 
 import scala.reflect.io.Directory
@@ -36,7 +36,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     //recover the path of all the files in the repoPath
     val allFilesRepoList = FileUtil
-      .recursiveListFiles(new File(repoPath)).toList
+      .recursiveListFiles(new File(repoPath))
       .filter(_.isFile)
       .filter(!_.getAbsolutePath.contains(".sgit"))
       .map(_.getAbsolutePath)
@@ -75,7 +75,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     //recover the path of all the files in the repoPath
     val allFilesRepoList = FileUtil
-      .recursiveListFiles(new File(repoPath)).toList
+      .recursiveListFiles(new File(repoPath))
       .filter(_.isFile)
       .filter(!_.getAbsolutePath.contains(".sgit"))
       .map(_.getAbsolutePath)
@@ -143,7 +143,6 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files in the index but which not exists anymore (with one file)" in {
 
-    val curdir =  System.getProperty("user.dir") + File.separator + ".test"
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     Add.add(repoPath,Seq(testFilePath))
@@ -155,7 +154,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     //recover the path of all the files in the repoPath
     val allFilesRepoList = FileUtil
-      .recursiveListFiles(new File(repoPath)).toList
+      .recursiveListFiles(new File(repoPath))
       .filter(_.isFile)
       .filter(!_.getAbsolutePath.contains(".sgit"))
       .map(_.getAbsolutePath)
@@ -175,7 +174,6 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files in the index but which not exists anymore (with multi files)" in {
 
-    val curdir =  System.getProperty("user.dir") + File.separator + ".test"
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + "test" + File.separator + "test2"
@@ -188,7 +186,7 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
     //recover the path of all the files in the repoPath
     val allFilesRepoList = FileUtil
-      .recursiveListFiles(new File(repoPath)).toList
+      .recursiveListFiles(new File(repoPath))
       .filter(_.isFile)
       .filter(!_.getAbsolutePath.contains(".sgit"))
       .map(_.getAbsolutePath)
@@ -206,13 +204,10 @@ class StatusTest extends FlatSpec with BeforeAndAfterEach {
 
   it should "recover all files not in the index but in the last commit" in {
 
-    val curdir =  System.getProperty("user.dir") + File.separator + ".test"
     val repoPath = Repo.getRepoPath(System.getProperty("user.dir") + File.separator + ".test").get
     val testFilePath =  repoPath + File.separator + "test" + File.separator + "test"
     val testFilePath2 =  repoPath + File.separator + "test" + File.separator + "test2"
     Add.add(repoPath,Seq(testFilePath, testFilePath2))
-
-    val mapindex = IndexUtil.readIndexToMap(repoPath)
 
     Commit.commit(repoPath, "commit")
 

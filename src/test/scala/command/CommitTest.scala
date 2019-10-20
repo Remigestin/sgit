@@ -2,7 +2,7 @@ package command
 
 import java.io.File
 
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, FunSuite}
+import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import util.BranchUtil.getCurrentBranchPath
 import util.{BranchUtil, CommitUtil, FileUtil, SgitObjectUtil}
 

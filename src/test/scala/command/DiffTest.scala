@@ -2,7 +2,6 @@ package command
 
 import java.io.File
 
-import command.Diff.{constructMatrix, getDiffList}
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import util.FileUtil
 

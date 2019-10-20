@@ -1,11 +1,8 @@
 package parser
 
-import java.io.File
-
-import command.{Add, Branch, Commit, Diff, Log, Repo, Status, Tag}
-import scopt.OParser
-import util.{CommitUtil, IndexUtil}
+import command._
 import parser.ErrorMessage._
+import scopt.OParser
 
 
 object Parser extends App {

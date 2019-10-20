@@ -1,7 +1,6 @@
 package command
 
 import java.io.File
-import java.nio.file.Files
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import util.FileUtil
